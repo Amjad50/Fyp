@@ -165,7 +165,9 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
 if __name__ == "__main__":
     templates = [
-            generate_latex_template("{num1} {operator1} {num2}{latin1}")
+            generate_latex_template("{num1} {operator1} {num2}{latin1}"),
+            generate_latex_template("{num1} {operator1} {num2}{latin1} {operator2} {num3}{latin1}^{{{num4}}} = 0"),
+            generate_latex_template("\\frac{{{num1}{latin1}}}{{{num2}}}"),
         ]
 
     if len(sys.argv) < 2:
