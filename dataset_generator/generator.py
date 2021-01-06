@@ -4,17 +4,23 @@ import os
 import sys
 import subprocess
 from tqdm import tqdm
+from random import randint, choice
+from string import ascii_letters
 
 from template import generate_latex_template
 
+# TODO: add operators like power, sub, frac and other stuff that need
+#  special format in LaTeX
+operators = "+-="
+
 def _get_random_num():
-    return 0
+    return randint(-1000, 1000)
 
 def _get_random_latin_letter():
-    return 'x'
+    return choice(ascii_letters)
 
 def _get_random_operator():
-    return '+'
+    return choice(operators)
 
 def load_templates_from_file(file_path):
     assert path.exists(file_path), f"The file_path {file_path}, does not exist"
