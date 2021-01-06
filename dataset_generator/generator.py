@@ -174,10 +174,19 @@ if __name__ == "__main__":
         print(f"USAGE: {sys.argv[0]} <out_dir>")
     else:
         progress = tqdm()
+        last_progress = 0
+
         def updater(a, b):
-            progress.reset(b)
-            progress.update(a)
+            global last_progress
+
+            if not last_progress:
+                # first time only
+                progress.reset(b)
+
+            progress.update(a - last_progress)
             progress.display()
+            last_progress = a
+
         generate_pdfs_from_templates(templates, sys.argv[1], updater=updater)
         progress.close()
 
