@@ -3,6 +3,7 @@ from os import path
 import os
 import sys
 import subprocess
+from tqdm import tqdm
 
 from template import generate_latex_template
 
@@ -44,10 +45,15 @@ def fill_template(template):
             operator5=_get_random_operator(),
         )
 
-def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}"):
+def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None):
     assert output_dir, "output_dir must not be empty"
     assert count_for_each >= 0, "count_for_each must be a positive number"
     assert naming_format, "naming_format must not be empty"
+    assert updater is None or callable(updater), "updater must be callable or None"
+
+    def updater_inner(a, b):
+        if updater:
+            updater(a, b)
 
     if not path.isdir(output_dir):
         # try to create directory
@@ -59,6 +65,11 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     # Go into the directory, because "pdflatex" outputs into the current working
     # directory
     os.chdir(output_dir)
+
+    all_size = len(templates) * count_for_each
+    # Because we have 3 stages
+    full_progress = all_size * 4
+    progress_counter = 0
 
     # Number of expressions so far
     expr_counter = 0
@@ -72,9 +83,15 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             tex_filename = file_basename + ".tex"
             expr_counter += 1
 
+            progress_counter += 1
+            updater_inner(progress_counter, full_progress)
+
             if path.exists(tex_filename):
                 print(f"[WARN]: Trying to generate file {tex_filename}, which already exists, skipping...",\
                         file=sys.stderr)
+
+                progress_counter += 3
+                updater_inner(progress_counter, full_progress)
                 continue;
 
             with open(tex_filename, "w") as f:
@@ -89,9 +106,13 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     crop_processes = []
     remaing_filenames = []
     for file_basename, process in zip(file_names, pdf_processes):
+        progress_counter += 1
+        updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
         if ret_code != 0:
             print(f"[ERROR] Generating {file_basename}.pdf, returned with code={ret_code}, skipping...")
+            progress_counter += 2
+            updater_inner(progress_counter, full_progress)
             continue;
 
         pdf_filename = file_basename + ".pdf"
@@ -106,9 +127,13 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     remaing_filenames.clear()
     image_processes = []
     for file_basename, process in zip(file_names, crop_processes):
+        progress_counter += 1
+        updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
         if ret_code != 0:
             print(f"[ERROR] Cropping {file_basename}.pdf, returned with code={ret_code}, skipping...")
+            progress_counter += 1
+            updater_inner(progress_counter, full_progress)
             continue;
 
         pdf_filename = file_basename + ".pdf"
@@ -124,6 +149,8 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     # Stage 4: finish up
     file_names = list(remaing_filenames)
     for file_basename, process in zip(file_names, image_processes):
+        progress_counter += 1
+        updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
         if ret_code != 0:
             print(f"[ERROR] Converting {file_basename}.pdf to image failed, returned with code={ret_code}")
@@ -138,5 +165,11 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(f"USAGE: {sys.argv[0]} <out_dir>")
     else:
-        generate_pdfs_from_templates(templates, sys.argv[1])
+        progress = tqdm()
+        def updater(a, b):
+            progress.reset(b)
+            progress.update(a)
+            progress.display()
+        generate_pdfs_from_templates(templates, sys.argv[1], updater=updater)
+        progress.close()
 
