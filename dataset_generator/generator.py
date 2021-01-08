@@ -32,8 +32,16 @@ def load_templates_from_file(file_path):
 
     return templates
 
+def fix_signs(expr):
+    return expr.replace('--', '+')\
+            .replace('- -', '+')\
+            .replace('- +', '-')\
+            .replace('-+', '-')\
+            .replace('+-', '-')\
+            .replace('+ -', '-')
+
 def fill_template(template):
-    return template.format(
+    return fix_signs(template.format(
             num1=_get_random_num(),
             num2=_get_random_num(),
             num3=_get_random_num(),
@@ -49,7 +57,7 @@ def fill_template(template):
             operator3=_get_random_operator(),
             operator4=_get_random_operator(),
             operator5=_get_random_operator(),
-        )
+        ))
 
 def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None):
     assert output_dir, "output_dir must not be empty"
