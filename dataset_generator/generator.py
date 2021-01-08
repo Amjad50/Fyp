@@ -65,7 +65,7 @@ def fill_template(template):
     ))
 
 
-def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None):
+def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None, image_density=500):
     assert output_dir, "output_dir must not be empty"
     assert count_for_each >= 0, "count_for_each must be a positive number"
     assert naming_format, "naming_format must not be empty"
@@ -147,6 +147,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     remaining_filenames.clear()
     old_processes = executor.finish()
     executor.clear()
+    image_density = str(image_density)
     for file_basename, process in zip(file_names, old_processes):
         progress_counter += 1
         updater_inner(progress_counter, full_progress)
@@ -161,8 +162,8 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
         png_filename = file_basename + ".png"
 
         remaining_filenames.append(file_basename)
-        executor.execute(["convert", "-density", "1000",
-                          pdf_filename, "-quality", "100", "-colorspace", "RGB", "-alpha",
+        executor.execute(["convert", "-density", image_density,
+                          pdf_filename, "-quality", "10", "-colorspace", "RGB", "-alpha",
                           "remove", png_filename],
                          stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
