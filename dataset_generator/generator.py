@@ -6,7 +6,7 @@ from random import randint, choice
 from string import ascii_letters
 
 from utils.parallel_executer import ParallelExecutor
-from .template import generate_latex_template
+from .template import generate_latex_template, formula_strap
 
 # TODO: add operators like power, sub, frac and other stuff that need
 #  special format in LaTeX
@@ -65,7 +65,8 @@ def fill_template(template):
     ))
 
 
-def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None, image_density=500):
+def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None,
+                                 image_density=500):
     assert output_dir, "output_dir must not be empty"
     assert count_for_each >= 0, "count_for_each must be a positive number"
     assert naming_format, "naming_format must not be empty"
@@ -89,11 +90,15 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
     all_size = len(templates) * count_for_each
     # Because we have 3 stages
-    full_progress = all_size * 4
+    full_progress = all_size * 3
     progress_counter = 0
 
     # Number of expressions so far
     expr_counter = 0
+
+    # Step 0: put the formula.tex file
+    with open("formula.tex", "w") as f:
+        f.write(formula_strap)
 
     # Stage 1: creating uncropped PDFs
     file_names = []
@@ -111,7 +116,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
                 print(f"[WARN]: Trying to generate file {tex_filename}, which already exists, skipping...",
                       file=sys.stderr)
 
-                progress_counter += 3
+                progress_counter += 2
                 updater_inner(progress_counter, full_progress)
                 continue
 
@@ -122,29 +127,8 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             file_names.append(file_basename)
             executor.execute(["pdflatex", tex_filename], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
-    # Stage 2: cropping pdfs
+    # Stage 2: converting pdfs into images
     remaining_filenames = []
-    old_processes = executor.finish()
-    executor.clear()
-    for file_basename, process in zip(file_names, old_processes):
-        progress_counter += 1
-        updater_inner(progress_counter, full_progress)
-        ret_code = process.wait()
-        if ret_code != 0:
-            print(f"[ERROR] Generating {file_basename}.pdf, returned with code={ret_code}, skipping...")
-            progress_counter += 2
-            updater_inner(progress_counter, full_progress)
-            continue
-
-        pdf_filename = file_basename + ".pdf"
-
-        remaining_filenames.append(file_basename)
-        executor.execute(["pdfcrop", "--margins", "5 5 5 5", pdf_filename, pdf_filename],
-                         stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-
-    # Stage 3: converting pdfs into images
-    file_names = list(remaining_filenames)
-    remaining_filenames.clear()
     old_processes = executor.finish()
     executor.clear()
     image_density = str(image_density)
@@ -167,7 +151,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
                           "remove", png_filename],
                          stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
-    # Stage 4: finish up
+    # Stage 3: finish up
     file_names = list(remaining_filenames)
     for file_basename, process in zip(file_names, executor.finish()):
         progress_counter += 1
