@@ -1,26 +1,29 @@
-
-from os import path
 import os
-import sys
 import subprocess
-from tqdm import tqdm
+import sys
+from os import path
 from random import randint, choice
 from string import ascii_letters
 
-from template import generate_latex_template
+from utils.parallel_executer import ParallelExecutor
+from .template import generate_latex_template
 
 # TODO: add operators like power, sub, frac and other stuff that need
 #  special format in LaTeX
 operators = "+-="
 
+
 def _get_random_num():
     return randint(-1000, 1000)
+
 
 def _get_random_latin_letter():
     return choice(ascii_letters)
 
+
 def _get_random_operator():
     return choice(operators)
+
 
 def load_templates_from_file(file_path):
     assert path.exists(file_path), f"The file_path {file_path}, does not exist"
@@ -32,32 +35,35 @@ def load_templates_from_file(file_path):
 
     return templates
 
+
 def fix_signs(expr):
-    return expr.replace('--', '+')\
-            .replace('- -', '+')\
-            .replace('- +', '-')\
-            .replace('-+', '-')\
-            .replace('+-', '-')\
-            .replace('+ -', '-')
+    return expr.replace('--', '+') \
+        .replace('- -', '+') \
+        .replace('- +', '-') \
+        .replace('-+', '-') \
+        .replace('+-', '-') \
+        .replace('+ -', '-')
+
 
 def fill_template(template):
     return fix_signs(template.format(
-            num1=_get_random_num(),
-            num2=_get_random_num(),
-            num3=_get_random_num(),
-            num4=_get_random_num(),
-            num5=_get_random_num(),
-            latin1=_get_random_latin_letter(),
-            latin2=_get_random_latin_letter(),
-            latin3=_get_random_latin_letter(),
-            latin4=_get_random_latin_letter(),
-            latin5=_get_random_latin_letter(),
-            operator1=_get_random_operator(),
-            operator2=_get_random_operator(),
-            operator3=_get_random_operator(),
-            operator4=_get_random_operator(),
-            operator5=_get_random_operator(),
-        ))
+        num1=_get_random_num(),
+        num2=_get_random_num(),
+        num3=_get_random_num(),
+        num4=_get_random_num(),
+        num5=_get_random_num(),
+        latin1=_get_random_latin_letter(),
+        latin2=_get_random_latin_letter(),
+        latin3=_get_random_latin_letter(),
+        latin4=_get_random_latin_letter(),
+        latin5=_get_random_latin_letter(),
+        operator1=_get_random_operator(),
+        operator2=_get_random_operator(),
+        operator3=_get_random_operator(),
+        operator4=_get_random_operator(),
+        operator5=_get_random_operator(),
+    ))
+
 
 def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None):
     assert output_dir, "output_dir must not be empty"
@@ -71,8 +77,9 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
     if not path.isdir(output_dir):
         # try to create directory
-        assert not path.exists(output_dir),\
-                f"Trying to create a directory with name {output_dir}, but there is a file that already exists with that name"
+        assert not path.exists(output_dir), \
+            f"Trying to create a directory with name {output_dir}, but there is a file that already exists with that " \
+            f"name "
 
         os.mkdir(output_dir)
 
@@ -89,8 +96,8 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     expr_counter = 0
 
     # Stage 1: creating uncropped PDFs
-    pdf_processes = []
     file_names = []
+    executor = ParallelExecutor(20)
     for template in templates:
         for _ in range(count_for_each):
             file_basename = naming_format.format(num=expr_counter)
@@ -101,25 +108,25 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             updater_inner(progress_counter, full_progress)
 
             if path.exists(tex_filename):
-                print(f"[WARN]: Trying to generate file {tex_filename}, which already exists, skipping...",\
-                        file=sys.stderr)
+                print(f"[WARN]: Trying to generate file {tex_filename}, which already exists, skipping...",
+                      file=sys.stderr)
 
                 progress_counter += 3
                 updater_inner(progress_counter, full_progress)
-                continue;
+                continue
 
             with open(tex_filename, "w") as f:
                 file_content = fill_template(template)
                 f.write(file_content)
 
             file_names.append(file_basename)
-            pdf_processes.append(subprocess.Popen(["pdflatex", tex_filename],\
-                    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL))
+            executor.execute(["pdflatex", tex_filename], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
     # Stage 2: cropping pdfs
-    crop_processes = []
-    remaing_filenames = []
-    for file_basename, process in zip(file_names, pdf_processes):
+    remaining_filenames = []
+    old_processes = executor.finish()
+    executor.clear()
+    for file_basename, process in zip(file_names, old_processes):
         progress_counter += 1
         updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
@@ -127,20 +134,20 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             print(f"[ERROR] Generating {file_basename}.pdf, returned with code={ret_code}, skipping...")
             progress_counter += 2
             updater_inner(progress_counter, full_progress)
-            continue;
+            continue
 
         pdf_filename = file_basename + ".pdf"
 
-        remaing_filenames.append(file_basename)
-        crop_processes.append(subprocess.Popen(["pdfcrop", "--margins", "5 5 5 5",\
-                pdf_filename, pdf_filename],\
-                stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL))
+        remaining_filenames.append(file_basename)
+        executor.execute(["pdfcrop", "--margins", "5 5 5 5", pdf_filename, pdf_filename],
+                         stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
     # Stage 3: converting pdfs into images
-    file_names = list(remaing_filenames)
-    remaing_filenames.clear()
-    image_processes = []
-    for file_basename, process in zip(file_names, crop_processes):
+    file_names = list(remaining_filenames)
+    remaining_filenames.clear()
+    old_processes = executor.finish()
+    executor.clear()
+    for file_basename, process in zip(file_names, old_processes):
         progress_counter += 1
         updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
@@ -148,21 +155,20 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             print(f"[ERROR] Cropping {file_basename}.pdf, returned with code={ret_code}, skipping...")
             progress_counter += 1
             updater_inner(progress_counter, full_progress)
-            continue;
+            continue
 
         pdf_filename = file_basename + ".pdf"
         png_filename = file_basename + ".png"
 
-        remaing_filenames.append(file_basename)
-        image_processes.append(subprocess.Popen(["convert", "-density", "1000",\
-                pdf_filename, "-quality", "100", "-colorspace", "RGB", "-alpha",\
-                "remove", png_filename],\
-                stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL))
-
+        remaining_filenames.append(file_basename)
+        executor.execute(["convert", "-density", "1000",
+                          pdf_filename, "-quality", "100", "-colorspace", "RGB", "-alpha",
+                          "remove", png_filename],
+                         stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
     # Stage 4: finish up
-    file_names = list(remaing_filenames)
-    for file_basename, process in zip(file_names, image_processes):
+    file_names = list(remaining_filenames)
+    for file_basename, process in zip(file_names, executor.finish()):
         progress_counter += 1
         updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
@@ -170,31 +176,3 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
             print(f"[ERROR] Converting {file_basename}.pdf to image failed, returned with code={ret_code}")
 
     os.chdir("..")
-
-if __name__ == "__main__":
-    templates = [
-            generate_latex_template("{num1} {operator1} {num2}{latin1}"),
-            generate_latex_template("{num1} {operator1} {num2}{latin1} {operator2} {num3}{latin1}^{{{num4}}} = 0"),
-            generate_latex_template("\\frac{{{num1}{latin1}}}{{{num2}}}"),
-        ]
-
-    if len(sys.argv) < 2:
-        print(f"USAGE: {sys.argv[0]} <out_dir>")
-    else:
-        progress = tqdm()
-        last_progress = 0
-
-        def updater(a, b):
-            global last_progress
-
-            if not last_progress:
-                # first time only
-                progress.reset(b)
-
-            progress.update(a - last_progress)
-            progress.display()
-            last_progress = a
-
-        generate_pdfs_from_templates(templates, sys.argv[1], updater=updater)
-        progress.close()
-
