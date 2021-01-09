@@ -98,7 +98,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
     all_size = len(templates) * count_for_each
     # Because we have 3 stages
-    full_progress = all_size * 3
+    full_progress = all_size * 2
     progress_counter = 0
 
     # Number of expressions so far
@@ -165,7 +165,6 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     # Stage 3: finish up
     file_names = list(remaining_filenames)
     for file_basename, process in zip(file_names, executor.finish()):
-        progress_counter += 1
         updater_inner(progress_counter, full_progress)
         ret_code = process.wait()
         if ret_code != 0:
