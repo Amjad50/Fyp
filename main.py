@@ -1,18 +1,16 @@
-import sys
 from argparse import ArgumentParser
 
 from tqdm import tqdm
 
 from dataset_generator.generator import generate_pdfs_from_templates
-from dataset_generator.template import generate_latex_template
 from web import server as web_server
 
 
 def command_line_generation(out_dir):
     templates = [
-        generate_latex_template("{num1} {operator1} {num2}{latin1}"),
-        generate_latex_template("{num1} {operator1} {num2}{latin1} {operator2} {num3}{latin1}^{{{num4}}} = 0"),
-        generate_latex_template("\\frac{{{num1}{latin1}}}{{{num2}}}"),
+        "{num1} {operator1} {num2}{latin1}",
+        "{num1} {operator1} {num2}{latin1} {operator2} {num3}{latin1}^{{{num4}}} = 0",
+        "\\frac{{{num1}{latin1}}}{{{num2}}}",
     ]
 
     progress = tqdm()

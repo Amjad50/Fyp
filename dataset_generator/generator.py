@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+import csv
 from os import path
 from random import randint, choice
 from string import ascii_letters
@@ -44,8 +45,7 @@ def fix_signs(expr):
         .replace('+-', '-') \
         .replace('+ -', '-')
 
-
-def fill_template(template):
+def fill_expression_template(template):
     return fix_signs(template.format(
         num1=_get_random_num(),
         num2=_get_random_num(),
@@ -64,6 +64,8 @@ def fill_template(template):
         operator5=_get_random_operator(),
     ))
 
+def fill_latex_file_template(expr):
+    return generate_latex_template(expr)
 
 def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None,
                                  image_density=500):
@@ -87,6 +89,12 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     # Go into the directory, because "pdflatex" outputs into the current working
     # directory
     os.chdir(output_dir)
+
+    csv_file = open("metadata.csv", "w")
+    csv_writer = csv.writer(csv_file)
+
+    # header
+    csv_writer.writerow(["file_basename", "expr"])
 
     all_size = len(templates) * count_for_each
     # Because we have 3 stages
@@ -120,8 +128,11 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
                 updater_inner(progress_counter, full_progress)
                 continue
 
+            expr = fill_expression_template(template)
+            csv_writer.writerow([file_basename, expr])
+
             with open(tex_filename, "w") as f:
-                file_content = fill_template(template)
+                file_content = fill_latex_file_template(expr)
                 f.write(file_content)
 
             file_names.append(file_basename)
@@ -165,4 +176,5 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
     os.remove("formula.tex")
 
+    csv_file.close()
     os.chdir("..")
