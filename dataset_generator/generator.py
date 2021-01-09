@@ -160,4 +160,9 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
         if ret_code != 0:
             print(f"[ERROR] Converting {file_basename}.pdf to image failed, returned with code={ret_code}")
 
+        for ext in ["tex", "aux", "pdf", "log"]:
+            os.remove(f"{file_basename}.{ext}")
+
+    os.remove("formula.tex")
+
     os.chdir("..")
