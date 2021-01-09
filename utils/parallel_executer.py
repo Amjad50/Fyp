@@ -2,11 +2,11 @@ import subprocess
 
 
 class ParallelExecutor:
-    def __init__(self, limit):
+    def __init__(self, limit: int):
         assert limit > 0, "Limit cannot be less than zero"
-        self.limit = limit
-        self.__executing = []
-        self.__finished = []
+        self.limit: int = limit
+        self.__executing: list = []
+        self.__finished: list = []
 
     def execute(self, *args, **kwrgs):
         if len(self.__executing) >= self.limit:
