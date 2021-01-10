@@ -158,8 +158,8 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
         remaining_filenames.append(file_basename)
         executor.execute(["convert", "-density", image_density,
-                          pdf_filename, "-quality", "10", "-colorspace", "RGB", "-alpha",
-                          "remove", png_filename],
+                          pdf_filename, "-quality", "10", "-colorspace", "Gray",
+                          "-depth", "1", "-alpha", "remove", png_filename],
                          stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
     # Stage 3: finish up
