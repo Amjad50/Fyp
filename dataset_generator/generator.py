@@ -177,3 +177,57 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
     csv_file.close()
     os.chdir("..")
+
+def generate_single_from_template(template, output_dir, file_basename, image_density=500):
+    assert output_dir, "output_dir must not be empty"
+    assert file_basename, "naming_format must not be empty"
+
+    if not path.isdir(output_dir):
+        # try to create directory
+        assert not path.exists(output_dir), \
+            f"Trying to create a directory with name {output_dir}, but there is a file that already exists with that " \
+            f"name "
+
+        os.mkdir(output_dir)
+
+    # Go into the directory, because "pdflatex" outputs into the current working
+    # directory
+    os.chdir(output_dir)
+
+    # Step 0: put the formula.tex file
+    with open("formula.tex", "w") as f:
+        f.write(formula_strap)
+
+    tex_filename = file_basename + ".tex"
+
+    if path.exists(tex_filename):
+        print(f"[WARN]: Trying to generate file {tex_filename}, which already exists, skipping...",
+              file=sys.stderr)
+
+    expr = fill_expression_template(template)
+
+    with open(tex_filename, "w") as f:
+        file_content = fill_latex_file_template(expr)
+        f.write(file_content)
+
+    subprocess.Popen(["pdflatex", tex_filename], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).wait()
+
+    # Stage 2: converting pdfs into images
+    pdf_filename = file_basename + ".pdf"
+    png_filename = file_basename + ".png"
+
+    image_density = str(image_density)
+    subprocess.Popen(["convert", "-density", image_density,
+                      pdf_filename, "-quality", "10", "-colorspace", "Gray",
+                      "-depth", "1", "-alpha", "remove", png_filename],
+                     stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).wait()
+
+    # Stage 3: finish up
+    for ext in ["tex", "aux", "pdf", "log"]:
+        os.remove(f"{file_basename}.{ext}")
+
+    os.remove("formula.tex")
+
+    os.chdir("..")
+
+    return expr
