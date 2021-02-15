@@ -49,36 +49,37 @@ def segment_char(img, start):
         if now[1] < top:
             top = now[1]
 
-        for i, j in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            x = now[0] + i
-            y = now[1] + j
+        # look trough all 8 surrounding pixels
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if i == 0 and j == 0:
+                    continue
 
-            # in bounds
-            if 0 <= x < w and 0 <= y < h:
-                # not visited
-                if (x, y) not in visited:
-                    # black
-                    # Access in arrays is inverted
-                    if not img[y, x]:
-                        queue.add((x, y))
+                x = now[0] + i
+                y = now[1] + j
 
-    return (left, top, right, down), img
+                # in bounds
+                if 0 <= x < w and 0 <= y < h:
+                    # not visited
+                    if (x, y) not in visited:
+                        # black
+                        # Access in arrays is inverted
+                        if not img[y, x]:
+                            queue.add((x, y))
+
+    # the plus 1 is for the extra space we didn't reach
+    return (left, top, right + 1, down + 1), img
 
 
-def find_possible_equal_merges(crops):
+def find_possible_equal_merges(crops, img):
     # 1- find all dash symbols
     dash_symbols = list(filter(is_dash_box, crops))
 
     def can_be_equal_sign(crop1, crop2):
         c1_w, c1_h = box_size(crop1)
-        c1_size = c1_w * c1_h
         c2_w, c2_h = box_size(crop2)
-        c2_size = c2_w * c2_h
 
         if abs(c1_w - c2_w) > 3:
-            return False
-
-        if abs(c1_size - c2_size) > 4:
             return False
 
         c1_left, c1_top, c1_right, c1_down = crop1
@@ -99,15 +100,13 @@ def find_possible_equal_merges(crops):
     return list(filter(lambda x: can_be_equal_sign(x[0], x[1]), permutations(dash_symbols, 2)))
 
 
-def find_possible_colon_merges(crops):
+def find_possible_colon_merges(crops, img):
     # 1- find all dot symbols
-    dot_symbols = list(filter(is_dot_box, crops))
+    dot_symbols = list(filter(lambda crop: is_dot_box(crop, img), crops))
 
     def can_be_colon(crop1, crop2):
         c1_w, c1_h = box_size(crop1)
-        c1_size = c1_w * c1_h
         c2_w, c2_h = box_size(crop2)
-        c2_size = c2_w * c2_h
 
         if abs(c1_w - c2_w) > 3 or abs(c1_h - c2_h) > 3:
             return False
@@ -130,9 +129,9 @@ def find_possible_colon_merges(crops):
     return list(filter(lambda x: can_be_colon(x[0], x[1]), permutations(dot_symbols, 2)))
 
 
-def find_possible_i_j_merges(crops):
+def find_possible_i_j_merges(crops, img):
     # 1- find all dot symbols
-    dot_symbols = list(filter(is_dot_box, crops))
+    dot_symbols = list(filter(lambda crop: is_dot_box(crop, img), crops))
 
     possible_combinations = []
 
@@ -150,12 +149,6 @@ def find_possible_i_j_merges(crops):
             return False
 
         if d_l > c_r or d_r < c_l:
-            return False
-
-        w, h = box_size(crop)
-        crop_size_ratio = w / h
-
-        if abs(crop_size_ratio - 0.5) > 0.2:
             return False
 
         if is_dash_box(crop):
@@ -185,11 +178,11 @@ def merge_segments(crops, possible_merges):
     return crops
 
 
-def try_merge_segments(crops):
+def try_merge_segments(crops, img):
     # order is important
-    crops = merge_segments(crops, find_possible_equal_merges(crops))
-    crops = merge_segments(crops, find_possible_colon_merges(crops))
-    crops = merge_segments(crops, find_possible_i_j_merges(crops))
+    crops = merge_segments(crops, find_possible_equal_merges(crops, img))
+    crops = merge_segments(crops, find_possible_colon_merges(crops, img))
+    crops = merge_segments(crops, find_possible_i_j_merges(crops, img))
 
     return crops
 
@@ -211,5 +204,5 @@ def segment_image(img: Image):
                 (crop_box, img_arr) = segment_char(img_arr, (x, y))
                 crops.append(crop_box)
     # tries to find symbols that are mergable, like `=`, `:`, `i`, `j`... and merge them
-    crops = try_merge_segments(crops)
+    crops = try_merge_segments(crops, img)
     return crops
