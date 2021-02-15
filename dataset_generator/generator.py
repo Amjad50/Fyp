@@ -86,6 +86,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
 
         os.mkdir(output_dir)
 
+    old_dir = os.getcwd()
     # Go into the directory, because "pdflatex" outputs into the current working
     # directory
     os.chdir(output_dir)
@@ -176,7 +177,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     os.remove("formula.tex")
 
     csv_file.close()
-    os.chdir("..")
+    os.chdir(old_dir)
 
 def generate_single_from_template(template, output_dir, file_basename, image_density=500):
     assert output_dir, "output_dir must not be empty"
@@ -190,6 +191,7 @@ def generate_single_from_template(template, output_dir, file_basename, image_den
 
         os.mkdir(output_dir)
 
+    old_dir = os.getcwd()
     # Go into the directory, because "pdflatex" outputs into the current working
     # directory
     os.chdir(output_dir)
@@ -228,6 +230,6 @@ def generate_single_from_template(template, output_dir, file_basename, image_den
 
     os.remove("formula.tex")
 
-    os.chdir("..")
+    os.chdir(old_dir)
 
     return expr
