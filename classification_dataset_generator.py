@@ -1,25 +1,64 @@
 from argparse import ArgumentParser
 from tqdm import tqdm
 from dataset_generator.generator import generate_single_from_template
+from segmenter.symbol_segmenter import segment_image
+from PIL import Image
 from string import digits, ascii_letters
 import csv
-import os
+from os import path, mkdir
 
 def generate_dataset(outdir):
     characters = list(digits + ascii_letters + "=-+")
     characters.extend(["\\Sigma", "\\pi"])
 
-    csv_file = open(os.path.join(outdir, "metadata.csv"), "w")
+
+    if not path.isdir(outdir):
+        # try to create directory
+        assert not path.exists(outdir), \
+            f"Trying to create a directory with name {outdir}, but there is a file that already exists with that " \
+            f"name "
+
+        mkdir(outdir)
+
+    csv_file = open(path.join(outdir, "metadata.csv"), "w")
     csv_writer = csv.writer(csv_file)
 
     counter = 0
+    
+    def get_next_filename():
+        nonlocal counter
+        filename = f"{counter:04}"
+        counter += 1
+        return filename 
+
+
+    plain_template = "{0}"
+    power_template = "{0}^{{{{{0}^{{{{{0}}}}}}}}}"
+
     for i in tqdm(range(len(characters))):
         ch = characters[i]
-        for template in ["{0}", "{0}^{{{{{0}^{{{{{0}}}}}}}}}"]:
-            filename = f"{counter:04}"
-            counter += 1
-            expr = generate_single_from_template(template.format(ch), outdir, filename)
-            csv_writer.writerow([expr, filename])
+
+        plain_filename = get_next_filename()
+        power_filename = get_next_filename()
+        plain_expr = generate_single_from_template(plain_template.format(ch),
+                outdir, plain_filename)
+        power_expr = generate_single_from_template(power_template.format(ch),
+                outdir, power_filename)
+
+        csv_writer.writerow([plain_expr, plain_filename])
+        csv_writer.writerow([power_expr, power_filename])
+
+        tmpimg = Image.open(path.join(outdir, power_filename + ".png"))
+        crops = segment_image(tmpimg)
+
+        if  len(crops) != 3:
+            print(f"[ERROR] element {plain_expr} did not produce 3 crops, but produced {len(crops)}")
+
+        for crop in crops:
+            cropped_img = tmpimg.crop(crop)
+            filename = get_next_filename()
+            cropped_img.save(path.join(outdir, filename + ".png"))
+            csv_writer.writerow([plain_expr, filename])
 
 if __name__ == "__main__":
     parser = ArgumentParser(description='Fyp1 classfication dataset generator')
