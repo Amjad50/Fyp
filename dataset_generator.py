@@ -10,6 +10,7 @@ def command_line_generation(out_dir, count_for_each):
         "{num1} {operator1} {num2}{latin1}",
         "{num1} {operator1} {num2}{latin1} {operator2} {num3}{latin1}^{{{num4}}} = 0",
         "\\frac{{{num1}{latin1}}}{{{num2}}}",
+        "{latin1}_{latin2} =\\frac{{{latin4}^{{{digit1}}}}}{{{latin3}}}"
     ]
 
     progress = tqdm()

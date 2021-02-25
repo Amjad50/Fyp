@@ -17,6 +17,9 @@ operators = "+-="
 def _get_random_num():
     return randint(-1000, 1000)
 
+def _get_random_digit():
+    return randint(0, 10)
+
 
 def _get_random_latin_letter():
     return choice(ascii_letters)
@@ -47,6 +50,11 @@ def fix_signs(expr):
 
 def fill_expression_template(template):
     return fix_signs(template.format(
+        digit1=_get_random_digit(),
+        digit2=_get_random_digit(),
+        digit3=_get_random_digit(),
+        digit4=_get_random_digit(),
+        digit5=_get_random_digit(),
         num1=_get_random_num(),
         num2=_get_random_num(),
         num3=_get_random_num(),
