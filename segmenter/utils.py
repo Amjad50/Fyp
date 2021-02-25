@@ -1,7 +1,15 @@
+from utils.geometry import get_line_intersection
+
 def box_size(box):
     left, top, right, down = box
 
     return right - left, down - top
+
+
+def box_center(box):
+    l, t, r, d = box
+
+    return l + (abs(r - l) / 2), t + (abs(d - t) / 2)
 
 
 def merge_boxes(box1, box2):
@@ -17,18 +25,11 @@ def merge_boxes(box1, box2):
 
 
 def is_another_in_between(box1, box2, boxes):
-    l1, t1, r1, d1 = box1
-    l2, t2, r2, d2 = box2
 
-    # box1 is the one on top of box2, if its not the case, then flip them
-    # TODO: this will not work if they are colliding or not in `top-down` position
-    if t1 > t2:
-        tmp = box1
-        box1 = box2
-        box2 = tmp
+    box1_center = box_center(box1)
+    box2_center = box_center(box2)
 
-        l1, t1, r1, d1 = box1
-        l2, t2, r2, d2 = box2
+    line_between_two_boxes = (box1_center, box2_center)
 
     for box in boxes:
         # ignore if its the same box
@@ -37,8 +38,16 @@ def is_another_in_between(box1, box2, boxes):
 
         left, top, right, down = box
 
-        if d1 <= top <= t2:
-            if (left < r1 and right > l1) or (left < r2 and right > l2):
+        lines = [((0, 0), (0, 0))] * 4
+        lines[0] = ((left, down), (left, top))
+        lines[1] = ((left, top), (right, top))
+        lines[2] = ((right, top), (right, down))
+        lines[3] = ((right, down), (left, down))
+
+        # we check if an edge (bounding-rect) of any symbol intersects with the
+        # line between the two symbols we are interested in
+        for line in lines:
+            if get_line_intersection(line, line_between_two_boxes):
                 return True
 
     return False
