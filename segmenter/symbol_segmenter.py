@@ -1,7 +1,6 @@
 import copy
 from itertools import permutations
 
-import numpy as np
 from PIL import Image
 
 from .simple_identifiers import *
@@ -22,6 +21,7 @@ def segment_char(img, start):
     assert img.dtype == bool
 
     img = img.copy()
+    result_img_cropped = np.ones_like(img, dtype=bool)
     h, w = img.shape
 
     left = right = start[0]
@@ -39,6 +39,8 @@ def segment_char(img, start):
         # convert the pixel to white
         # Access in arrays is in `y, x` or `row, col` that's why it is inverted here
         img[now[1], now[0]] = True
+        # move the into the result img crop
+        result_img_cropped[now[1], now[0]] = False
 
         if now[0] > right:
             right = now[0]
@@ -68,7 +70,7 @@ def segment_char(img, start):
                             queue.add((x, y))
 
     # the plus 1 is for the extra space we didn't reach
-    return (left, top, right + 1, down + 1), img
+    return (left, top, right + 1, down + 1), img, result_img_cropped
 
 
 def find_possible_equal_merges(crops, img):
@@ -163,46 +165,76 @@ def find_possible_i_j_merges(crops, img):
     return list(filter(lambda x: can_be_i_j(x[0], x[1]), possible_combinations))
 
 
-def merge_segments(crops, possible_merges):
+def merge_cropped_images(cropped_img1, cropped_img2):
+    assert cropped_img1.shape == cropped_img2.shape
+
+    return cropped_img1 & cropped_img2
+
+
+def merge_segments(crops, cropped_images, possible_merges):
     if len(possible_merges) != 0:
         crops = copy.deepcopy(crops)
 
+    indices_to_remove = set()
     for c1, c2 in possible_merges:
-        if c1 in crops:
-            crops.remove(c1)
-        if c2 in crops:
-            crops.remove(c2)
+        c1_i = crops.index(c1)
+        c2_i = crops.index(c2)
+
+        indices_to_remove.add(c1_i)
+        indices_to_remove.add(c2_i)
 
         crops.append(merge_boxes(c1, c2))
 
-    return crops
+        cropped_images.append(merge_cropped_images(cropped_images[c1_i], cropped_images[c2_i]))
+
+    for index in sorted(indices_to_remove, reverse=True):
+        crops.pop(index)
+        cropped_images.pop(index)
+
+    return crops, cropped_images
 
 
-def try_merge_segments(crops, img):
+def try_merge_segments(crops, cropped_images, img):
     # order is important
-    crops = merge_segments(crops, find_possible_equal_merges(crops, img))
-    crops = merge_segments(crops, find_possible_colon_merges(crops, img))
-    crops = merge_segments(crops, find_possible_i_j_merges(crops, img))
+    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_equal_merges(crops, img))
+    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_colon_merges(crops, img))
+    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_i_j_merges(crops, img))
 
-    return crops
+    return crops, cropped_images
+
+
+def final_crop_images(crops, cropped_images):
+    assert len(crops) == len(cropped_images)
+
+    result = []
+
+    for crop, cropped_image in zip(crops, cropped_images):
+        result.append(Image.fromarray(cropped_image).crop(crop))
+
+    return result
 
 
 def segment_image(img: Image):
-    """
-    Segments the image into symbols.
-
-    Returns an array of boxes that represent the boundaries of a single symbol
-    """
     img_arr = np.array(img)
     h, w = img_arr.shape
 
     crops = []
+    cropped_images = []
     for x in range(w):
         for y in range(h):
             # Access in arrays is inverted because it is in form `row, col` == `y, x`
             if not img_arr[y, x]:
-                (crop_box, img_arr) = segment_char(img_arr, (x, y))
+                (crop_box, img_arr, result_for_this_crop) = segment_char(img_arr, (x, y))
+                cropped_images.append(result_for_this_crop)
                 crops.append(crop_box)
     # tries to find symbols that are mergable, like `=`, `:`, `i`, `j`... and merge them
-    crops = try_merge_segments(crops, img)
-    return crops
+    crops, cropped_images = try_merge_segments(crops, cropped_images, img)
+    cropped_images = final_crop_images(crops, cropped_images)
+
+    return list(zip(crops, cropped_images))
+
+
+def segment_image_crops(img: Image):
+    crops_images = segment_image(img)
+    crops, _cropped_images = list(zip(*crops_images))
+    return list(crops)

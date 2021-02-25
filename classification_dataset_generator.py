@@ -49,13 +49,12 @@ def generate_dataset(outdir):
         csv_writer.writerow([plain_expr, plain_filename])
 
         tmpimg = Image.open(path.join(outdir, power_filename + ".png"))
-        crops = segment_image(tmpimg)
+        crops_images = segment_image(tmpimg)
 
-        if len(crops) != 3:
-            print(f"[ERROR] element {plain_expr} did not produce 3 crops, but produced {len(crops)}")
+        if len(crops_images) != 3:
+            print(f"[ERROR] element {plain_expr} did not produce 3 crops, but produced {len(crops_images)}")
 
-        for crop in crops:
-            cropped_img = tmpimg.crop(crop)
+        for crop, cropped_img in crops_images:
             filename = get_next_filename()
             cropped_img.save(path.join(outdir, filename + ".png"))
             csv_writer.writerow([plain_expr, filename])

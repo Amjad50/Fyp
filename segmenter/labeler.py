@@ -1,11 +1,11 @@
 from PIL import ImageColor, ImageDraw
 
-from .symbol_segmenter import segment_image
+from .symbol_segmenter import segment_image_crops
 
 
 def label_crops(img, crops=None):
     if not crops:
-        crops = segment_image(img.convert('1'))
+        crops = segment_image_crops(img.convert('1'))
     labeled_img = img.copy()
     labeled_img = labeled_img.convert('RGB')
     img_d = ImageDraw.Draw(labeled_img)

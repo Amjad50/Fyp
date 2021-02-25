@@ -2,7 +2,7 @@ import unittest
 
 from PIL import Image
 
-from .symbol_segmenter import segment_image
+from .symbol_segmenter import segment_image_crops
 
 
 class SegmenterTestCase(unittest.TestCase):
@@ -11,12 +11,12 @@ class SegmenterTestCase(unittest.TestCase):
         This tests the segmentation of `=`, `:`, `i`, `j` characters with some extra characters as well
         """
         multi_part_symbols_img = Image.open('./testing_dataset/multi_part_symbols.png')
-        image_segments = segment_image(multi_part_symbols_img)
+        image_segments = segment_image_crops(multi_part_symbols_img)
 
         self.assertEqual(len(image_segments), 7)
         self.assertListEqual(image_segments,
-                             [(190, 93, 224, 95), (193, 113, 220, 158), (196, 19, 218, 64), (93, 87, 138, 102),
-                              (149, 82, 155, 111), (16, 66, 33, 112), (37, 66, 64, 125)])
+                             [(190, 93, 225, 96), (193, 113, 221, 159), (196, 19, 219, 65), (93, 87, 139, 103),
+                              (149, 82, 156, 112), (16, 66, 34, 113), (37, 66, 65, 126)])
 
     def test_dot_on_frac(self):
         """
@@ -27,13 +27,13 @@ class SegmenterTestCase(unittest.TestCase):
         make it think that this is a valid `i` or `j` character, but it is identifying it correctly.
         """
         dot_on_frac_img = Image.open('./testing_dataset/dot_on_frac.png')
-        image_segments = segment_image(dot_on_frac_img)
+        image_segments = segment_image_crops(dot_on_frac_img)
 
         self.assertEqual(len(image_segments), 11)
         self.assertListEqual(image_segments,
-                             [(22, 93, 226, 95), (52, 19, 74, 64), (86, 58, 92, 64), (102, 19, 129, 64),
-                              (137, 19, 165, 66), (144, 113, 166, 158), (171, 18, 201, 64), (179, 152, 185, 158),
-                              (195, 113, 222, 160), (69, 134, 114, 149), (24, 113, 41, 159)])
+                             [(22, 93, 227, 96), (52, 19, 75, 65), (86, 58, 93, 65), (102, 19, 130, 65),
+                              (137, 19, 166, 67), (144, 113, 167, 159), (171, 18, 202, 65), (179, 152, 186, 159),
+                              (195, 113, 223, 161), (69, 134, 115, 150), (24, 113, 42, 160)])
 
 
 if __name__ == '__main__':

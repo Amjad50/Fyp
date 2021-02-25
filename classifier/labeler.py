@@ -1,6 +1,5 @@
 from PIL import ImageDraw, ImageFont
 
-from segmenter.labeler import label_crops
 from segmenter.symbol_segmenter import segment_image
 from .classifier import SVMClassifier
 
@@ -24,12 +23,12 @@ def draw_labeled_crops(img, labeled_crops):
 
 
 def get_labeled_crops(img, svm_model: SVMClassifier):
-    crops = segment_image(img)
-    labeled_crops_img = label_crops(img, crops)
+    crops_images = segment_image(img)
+    crops, cropped_images = list(zip(*crops_images))
 
     predicted_labels = []
 
-    for crop in crops:
-        predicted_labels.append(svm_model.predict_label(img.crop(crop)))
+    for crop, cropped_img in crops_images:
+        predicted_labels.append(svm_model.predict_label(cropped_img))
 
     return list(zip(predicted_labels, crops))

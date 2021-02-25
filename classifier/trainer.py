@@ -103,7 +103,8 @@ def generate_features_dataset(classification_dataset_dir, augmentation_cont, pro
             tqdm_preprocessing.update(1)
         img = Image.fromarray(img_array).convert('1')
 
-        crops = segment_image(img)
+        crops_images = segment_image(img)
+        crops, cropped_images = list(zip(*crops_images))
 
         if len(crops) != 1:
             # FIXME: manual crop, since only one symbol per picture
@@ -126,9 +127,10 @@ def generate_features_dataset(classification_dataset_dir, augmentation_cont, pro
                         if x < left:
                             left = x
 
-            crops = [(left, top, right + 1, down + 1)]
+            crop = (left, top, right + 1, down + 1)
+            cropped_images = [img.crop(crop)]
 
-        cropped_img = img.crop(crops[0])
+        cropped_img = cropped_images[0]
 
         w, h = cropped_img.size
         resize_ratio = min(128 / w, 128 / h)
