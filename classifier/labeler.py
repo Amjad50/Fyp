@@ -9,7 +9,7 @@ def draw_labeled_crops(img, labeled_crops):
     labeled_img = labeled_img.convert('RGB')
     img_d = ImageDraw.Draw(labeled_img)
 
-    font = ImageFont.truetype('arial.ttf', size=20)
+    font = ImageFont.truetype('arial.ttf', size=20, layout_engine=ImageFont.LAYOUT_BASIC)
 
     for i, labeled_crop in enumerate(labeled_crops):
         label, crop = labeled_crop
