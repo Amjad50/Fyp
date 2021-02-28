@@ -18,8 +18,9 @@ class SVMClassifier:
         svm_pickle_file = open(svm_pickle_filename, 'rb')
         self.model = pickle.load(svm_pickle_file)
 
-    def train_new_model(self, classification_dataset_dir):
-        model, score = train_svm_model(classification_dataset_dir)
+    def train_new_model(self, classification_dataset_dir, augmentation_count=10):
+        model, score = train_svm_model(classification_dataset_dir,
+                augmentation_count=augmentation_count)
 
         print(f'[LOG] trained a new model, with score = {score}')
 
