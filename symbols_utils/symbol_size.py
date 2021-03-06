@@ -1,4 +1,4 @@
-from .utils import box_size
+from segmenter.utils import box_size, box_center
 
 # default sizes of symbols
 SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 48), '4': (31, 47), '5': (28, 48),
@@ -13,6 +13,36 @@ SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 
                          'S': (40, 51), 'T': (47, 47), 'U': (47, 49), 'V': (49, 49), 'W': (68, 49), 'X': (57, 47),
                          'Y': (49, 47), 'Z': (46, 47), '=': (46, 16), '-': (42, 3), '+': (46, 46), '\\Sigma': (42, 47),
                          '\\pi': (37, 31)}
+
+HAS_BELOW_BASELINE = 'fgjpqyQ'
+BELOW_BASELINE_HEIGHT = 12
+
+
+# returns the length from the top of the symbol to get to the baseline
+def get_baseline_height(symbol_name, box):
+    w, h = box_size(box)
+
+    if symbol_name in HAS_BELOW_BASELINE:
+        _, default_h = SYMBOLS_DEFAULT_SIZES[symbol_name]
+        height_perc = h / default_h
+
+        return h - BELOW_BASELINE_HEIGHT * height_perc
+    else:
+        return h
+
+
+def get_baseline_center(symbol_name, box):
+    # extract the top position
+    _l, t, _r, _d = box
+    # get the center in x coordinate (width)
+    w, _ = box_center(box)
+
+    # get the baseline height from the top
+    baseline_h = get_baseline_height(symbol_name, box)
+    # add the baseline offset to the top to get the new height
+    new_h = t + baseline_h
+
+    return w, new_h
 
 
 def percentage_of_default_size(symbol_name, box):
