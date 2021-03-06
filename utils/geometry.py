@@ -1,5 +1,8 @@
 # got this from 
 # https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/1968345#1968345
+from math import degrees, atan2, sqrt
+
+
 def get_line_intersection(line1, line2):
     """
     Finds an intersection point between two lines, each line in the form
@@ -34,3 +37,13 @@ def get_line_intersection(line1, line2):
         return i_x, i_y
 
     return None
+
+
+def angle_between_points(p1, p2):
+    x_change = p2[0] - p1[0]
+    y_change = p2[1] - p1[1]
+    return degrees(atan2(-y_change, x_change))
+
+
+def distance_between_points(p1, p2):
+    return sqrt(((p1[0] - p2[0]) ** 2) + ((p1[1] - p2[1]) ** 2))

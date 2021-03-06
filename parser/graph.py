@@ -1,0 +1,110 @@
+from typing import List, Tuple
+
+
+def find_minimum_spanning_tree(connections: List[List[Tuple[int, float]]]):
+    """
+    @param connections: graph list, each element in the list contain a list of edges, each edge has the destination node number
+                        and the distance.
+    """
+    g = __Graph(len(connections))
+
+    visited = []
+
+    for i, connectings in enumerate(connections):
+        for j, distance in connectings:
+            if (i, j) in visited or (j, i) in visited:
+                continue
+            g.addEdge(i, j, distance)
+
+    return g.KruskalMST()
+
+
+class __Graph:
+    def __init__(self, vertices):
+        self.V = vertices  # No. of vertices
+        self.graph = []  # default dictionary
+        # to store graph
+
+    # function to add an edge to graph
+    def addEdge(self, u, v, w):
+        self.graph.append([u, v, w])
+
+    # A utility function to find set of an element i
+    # (uses path compression technique)
+    def find(self, parent, i):
+        if parent[i] == i:
+            return i
+        return self.find(parent, parent[i])
+
+    # A function that does union of two sets of x and y
+    # (uses union by rank)
+    def union(self, parent, rank, x, y):
+        xroot = self.find(parent, x)
+        yroot = self.find(parent, y)
+
+        # Attach smaller rank tree under root of
+        # high rank tree (Union by Rank)
+        if rank[xroot] < rank[yroot]:
+            parent[xroot] = yroot
+        elif rank[xroot] > rank[yroot]:
+            parent[yroot] = xroot
+
+        # If ranks are same, then make one as root
+        # and increment its rank by one
+        else:
+            parent[yroot] = xroot
+            rank[xroot] += 1
+
+    # The main function to construct MST using Kruskal's
+    # algorithm
+    def KruskalMST(self):
+
+        result = []  # This will store the resultant MST
+
+        # An index variable, used for sorted edges
+        i = 0
+
+        # An index variable, used for result[]
+        e = 0
+
+        # Step 1:  Sort all the edges in
+        # non-decreasing order of their
+        # weight.  If we are not allowed to change the
+        # given graph, we can create a copy of graph
+        self.graph = sorted(self.graph,
+                            key=lambda item: item[2])
+
+        parent = []
+        rank = []
+
+        # Create V subsets with single elements
+        for node in range(self.V):
+            parent.append(node)
+            rank.append(0)
+
+        # Number of edges to be taken is equal to V-1
+        while e < self.V - 1:
+            # Step 2: Pick the smallest edge and increment
+            # the index for next iteration
+            u, v, w = self.graph[i]
+            i = i + 1
+            x = self.find(parent, u)
+            y = self.find(parent, v)
+
+            # If including this edge does't
+            #  cause cycle, include it in result
+            #  and increment the indexof result
+            # for next edge
+            if x != y:
+                e = e + 1
+                result.append([u, v, w])
+                self.union(parent, rank, x, y)
+            # Else discard the edge
+
+        return_result = []
+        minimumCost = 0
+        for u, v, weight in result:
+            minimumCost += weight
+            return_result.append((u, v))
+
+        return return_result
