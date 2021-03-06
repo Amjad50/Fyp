@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 
-def find_minimum_spanning_tree(connections: List[List[Tuple[int, float]]]):
+def find_minimum_spanning_tree(connections: List[List[Tuple[int, float]]]) -> List[Tuple[int, int]]:
     """
     @param connections: graph list, each element in the list contain a list of edges, each edge has the destination node number
                         and the distance.
