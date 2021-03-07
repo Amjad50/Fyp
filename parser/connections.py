@@ -1,12 +1,12 @@
 from typing import List, Tuple
 
 from parser.graph import find_minimum_spanning_tree
-from parser.utils import compute_modified_distance, get_most_probable_relation, distance_labeled_crops
+from parser.utils import get_most_probable_relation, distance_labeled_crops, compute_modified_distance
 from segmenter.utils import is_another_in_between
 from utils.types import LabeledCrops
 
 
-def get_all_symbols_connections(labeled_crops: LabeledCrops) -> List[List[Tuple[int, float]]]:
+def get_all_symbols_relations_connections(labeled_crops: LabeledCrops) -> List[List[Tuple[int, float, str]]]:
     labels, crops = list(zip(*labeled_crops))
 
     relations = [[] for _ in range(len(labeled_crops))]
@@ -61,11 +61,25 @@ def get_all_symbols_connections(labeled_crops: LabeledCrops) -> List[List[Tuple[
             # as `distance_labeled_crops` returns `Optional`, but if `relation` is not `None`, then this must be also
             # not `None`
             assert d is not None
-            connections[b1_i].append((b2_i, compute_modified_distance(d, relation)))
+            connections[b1_i].append((b2_i, d, relation))
+
+    return connections
+
+
+def get_all_symbols_normalized_connections(labeled_crops: LabeledCrops) -> List[List[Tuple[int, float]]]:
+    connections = get_all_symbols_relations_connections(labeled_crops)
+
+    connections = [
+        [
+            (j, compute_modified_distance(distance, relation))
+            for j, distance, relation in connecting
+        ]
+        for connecting in connections
+    ]
 
     return connections
 
 
 def get_minimum_spanning_tree_symbol_connections(labeled_crops: LabeledCrops) -> List[Tuple[int, int]]:
-    connections = get_all_symbols_connections(labeled_crops)
+    connections = get_all_symbols_normalized_connections(labeled_crops)
     return sorted(find_minimum_spanning_tree(connections))
