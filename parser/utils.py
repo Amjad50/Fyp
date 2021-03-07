@@ -1,16 +1,14 @@
-from typing import Tuple
+from typing import Optional
 
 import numpy as np
 
 from segmenter.utils import box_center
 from symbols_utils.symbol_size import get_baseline_center, percentage_of_default_size
 from utils.geometry import angle_between_points, distance_between_points
-from utils.types import Box
-
-LabelCrop = Tuple[str, Box]
+from utils.types import LabelCrop
 
 
-def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -> str:
+def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -> Optional[str]:
     label1, box1 = label_crop1
     label2, box2 = label_crop2
 
@@ -19,7 +17,8 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
 
     # the left should be first
     if left1 > left2:
-        return get_most_probable_relation(label_crop2, label_crop1)
+        # TODO: is this the best way? using this to reduce connections
+        return None
 
     center1 = box_center(box1)
     center2 = box_center(box2)
@@ -67,13 +66,13 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
     return 'none'
 
 
-def distance_labeled_crops(label_crop1: LabelCrop, label_crop2: LabelCrop) -> float:
+def distance_labeled_crops(label_crop1: LabelCrop, label_crop2: LabelCrop) -> Optional[float]:
     label1, box1 = label_crop1
     label2, box2 = label_crop2
 
     # the left should be first
     if box1[0] > box2[0]:
-        return distance_labeled_crops(label_crop2, label_crop1)
+        return None
 
     p1 = box_center(box1)
     p2 = box_center(box2)

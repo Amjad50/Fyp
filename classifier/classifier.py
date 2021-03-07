@@ -1,7 +1,9 @@
 import pickle
 
-from .utils import extract_hog_features
+from PIL import Image
+
 from .trainer import train_svm_model
+from .utils import extract_hog_features
 
 
 class SVMClassifier:
@@ -20,13 +22,13 @@ class SVMClassifier:
 
     def train_new_model(self, classification_dataset_dir, augmentation_count=10):
         model, score = train_svm_model(classification_dataset_dir,
-                augmentation_count=augmentation_count)
+                                       augmentation_count=augmentation_count)
 
         print(f'[LOG] trained a new model, with score = {score}')
 
         self.model = model
 
-    def predict_label(self, img):
+    def predict_label(self, img: Image) -> str:
         if not self.model:
             raise Exception('There is no model, train a new model or import one from pickle')
         features = extract_hog_features(img)
