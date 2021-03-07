@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Callable, Optional
 
 from PIL import Image
 
@@ -20,13 +20,64 @@ class SymbolTreeNode:
     def connect_with_relation(self, other: 'SymbolTreeNode', relation: str) -> None:
         assert relation in RELATIONS, f"relation type {relation} is unknown"
 
-        self.relations[relation].append(other)
+        relations_list = self.relations[relation]
+
+        already_exist_index = SymbolTreeNode.__find_node_with_condition(relations_list,
+                                                                        lambda node: node.position == other.position)
+        assert already_exist_index is None, \
+            f"connection from {self.position} to {other.position} with relation '{relation}' already exists"
+
+        relations_list.append(other)
         other.__connect_with_relation_inverse(self, relation)
 
     def __connect_with_relation_inverse(self, other: 'SymbolTreeNode', relation: str) -> None:
         assert relation in RELATIONS, f"relation type {relation} is unknown"
 
-        self.relations[f"{relation}_inverse"].append(other)
+        relations_list = self.relations[f"{relation}_inverse"]
+
+        already_exist_index = SymbolTreeNode.__find_node_with_condition(relations_list,
+                                                                        lambda node: node.position == other.position)
+        assert already_exist_index is None, \
+            f"connection from {self.position} to {other.position} with relation '{relation}_inverse' already exists"
+
+        relations_list.append(other)
+
+    def remove_connection_with_relation(self, relation: str, position: int) -> None:
+        assert relation in RELATIONS, f"relation type {relation} is unknown"
+
+        relations_list = self.relations[relation]
+        index = SymbolTreeNode.__find_node_with_condition(relations_list,
+                                                          lambda node: node.position == position)
+
+        if index is not None:
+            other = relations_list.pop(index)
+
+            other.__remove_connection_with_relation_inverse(relation, self.position)
+        else:
+            raise ValueError(f"node with position {position} could not be found in relation {relation}")
+
+    def __remove_connection_with_relation_inverse(self, relation: str, position: int) -> None:
+        assert relation in RELATIONS, f"relation type {relation} is unknown"
+
+        relations_list = self.relations[f"{relation}_inverse"]
+        index = SymbolTreeNode.__find_node_with_condition(relations_list,
+                                                          lambda node: node.position == position)
+
+        if index is not None:
+            relations_list.pop(index)
+        else:
+            raise ValueError(f"node with position {position} could not be found in relation {relation}_inverse")
+
+        pass
+
+    @staticmethod
+    def __find_node_with_condition(nodes: List['SymbolTreeNode'], condition: Callable[['SymbolTreeNode'], bool]) -> \
+            Optional[int]:
+        for i, node in enumerate(nodes):
+            if condition(node):
+                return i
+
+        return None
 
 
 class SymbolTree:
@@ -63,6 +114,12 @@ class SymbolTree:
             result += "}\n"
 
         return result
+
+    def add_connection(self, from_node: int, to_node: int, relation: str) -> None:
+        self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
+
+    def remove_connection(self, from_node: int, to_node: int, relation: str) -> None:
+        self.nodes[from_node].remove_connection_with_relation(relation, to_node)
 
     @classmethod
     def from_image(cls, img: Image) -> 'SymbolTree':
