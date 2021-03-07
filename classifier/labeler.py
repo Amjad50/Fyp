@@ -1,6 +1,9 @@
+from typing import List
+
 from PIL import ImageDraw, ImageFont
 
 from segmenter.symbol_segmenter import segment_image
+from utils.types import LabeledCrops, LabelCrop
 from .classifier import SVMClassifier
 
 
@@ -22,13 +25,22 @@ def draw_labeled_crops(img, labeled_crops):
     return labeled_img
 
 
-def get_labeled_crops(img, svm_model: SVMClassifier):
+def __sort_labeled_crops(labeld_crops) -> LabeledCrops:
+    def sort_key(label_crop: LabelCrop) -> int:
+        l, _t, r, _d = label_crop[1]
+
+        return l * 1000 - r
+
+    return sorted(labeld_crops, key=sort_key)
+
+
+def get_labeled_crops(img, svm_model: SVMClassifier) -> LabeledCrops:
     crops_images = segment_image(img)
     crops, cropped_images = list(zip(*crops_images))
 
-    predicted_labels = []
+    predicted_labels: List[str] = []
 
     for crop, cropped_img in crops_images:
         predicted_labels.append(svm_model.predict_label(cropped_img))
 
-    return list(zip(predicted_labels, crops))
+    return __sort_labeled_crops(list(zip(predicted_labels, crops)))

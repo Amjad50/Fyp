@@ -68,4 +68,4 @@ def get_all_symbols_connections(labeled_crops: LabeledCrops) -> List[List[Tuple[
 
 def get_minimum_spanning_tree_symbol_connections(labeled_crops: LabeledCrops) -> List[Tuple[int, int]]:
     connections = get_all_symbols_connections(labeled_crops)
-    return find_minimum_spanning_tree(connections)
+    return sorted(find_minimum_spanning_tree(connections))
