@@ -40,21 +40,21 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
             return 'down'
 
     if perc_perc < 0.8:
-        if -8 >= angle >= -30:
+        if -8 >= angle >= -30 and label1 != '-':
             return 'sub'
-        elif 15 <= angle <= 60:
+        elif 15 <= angle <= 60 and label1 != '-':
             return 'power'
     if abs(perc_perc - 1) > 0.15:
         # cannot have sub of smaller symbol to a larger symbol
         if -10 >= angle >= -30:
             return 'none'
 
-    if label2 == '-':
+    if label1 == '-' or label2 == '-':
         angle = angle_between_points(center1, center2)
 
-    if -12 >= angle >= -30:
+    if -12 >= angle >= -30 and label1 != '-':
         return 'sub'
-    elif 25 <= angle <= 60:
+    elif 25 <= angle <= 60 and label1 != '-':
         return 'power'
     elif -10 <= angle <= 10:
         return 'left'
