@@ -7,6 +7,8 @@ from symbols_utils.symbol_size import get_baseline_center, percentage_of_default
 from utils.geometry import angle_between_points, distance_between_points
 from utils.types import LabelCrop
 
+RELATIONS = ["left", "power", "sub", "up", "down", "none"]
+
 
 def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -> Optional[str]:
     label1, box1 = label_crop1
