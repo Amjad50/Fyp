@@ -11,7 +11,7 @@ from utils.types import Box
 
 
 def draw_connections(img: Image, crops: List[Box], connections: List[Tuple[int, int]]) -> Image:
-    labeled_img = img.copy()
+    labeled_img = img.copy().convert('RGB')
     img_d = ImageDraw.Draw(labeled_img)
 
     for (i, j) in connections:

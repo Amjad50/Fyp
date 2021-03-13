@@ -5,6 +5,7 @@ from PIL import Image
 from segmenter.labeler import label_crops
 from utils.types import LabeledCrops, Box
 from .connections import get_all_symbols_relations_connections, get_minimum_spanning_tree_symbol_connections
+from .labeler import draw_connections
 from .utils import RELATIONS
 
 
@@ -120,6 +121,22 @@ class SymbolTree:
 
     def remove_connection(self, from_node: int, to_node: int, relation: str) -> None:
         self.nodes[from_node].remove_connection_with_relation(relation, to_node)
+
+    def draw_min_connections(self, img: Image):
+        all_connections = []
+
+        crops = [
+            node.crop
+            for node in self.nodes
+        ]
+
+        for i, node in enumerate(self.nodes):
+            for relation, connections in node.relations.items():
+                if 'inverse' not in relation and connections:
+                    for inner_node in connections:
+                        all_connections.append((i, inner_node.position))
+
+        return draw_connections(img, crops, all_connections)
 
     @classmethod
     def from_image(cls, img: Image) -> 'SymbolTree':
