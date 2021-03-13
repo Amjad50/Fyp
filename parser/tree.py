@@ -94,6 +94,112 @@ class SymbolTree:
 
             self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
 
+    @classmethod
+    def from_image(cls, img: Image) -> 'SymbolTree':
+        labeled_crops = label_crops(img)
+
+        return cls.from_labeled_crops(labeled_crops)
+
+    @classmethod
+    def from_labeled_crops(cls, labeled_crops: LabeledCrops) -> 'SymbolTree':
+        relations = get_all_symbols_relations_connections(labeled_crops)
+        min_tree = get_minimum_spanning_tree_symbol_connections(labeled_crops)
+
+        return cls(labeled_crops, relations, min_tree)
+
+    def add_connection(self, from_node: int, to_node: int, relation: str) -> None:
+        self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
+
+    def remove_connection(self, from_node: int, to_node: int, relation: str) -> None:
+        self.nodes[from_node].remove_connection_with_relation(relation, to_node)
+
+    def draw_min_connections(self, img: Image):
+        all_connections = []
+
+        crops = [
+            node.crop
+            for node in self.nodes
+        ]
+
+        for i, node in enumerate(self.nodes):
+            for relation, connections in node.relations.items():
+                if 'inverse' not in relation and connections:
+                    for inner_node in connections:
+                        all_connections.append((i, inner_node.position))
+
+        return draw_connections(img, crops, all_connections)
+
+    def optimize_connections(self):
+        changed = True
+
+        # loop until there is no more optimizations to do
+        while changed:
+            changed = False
+            for node in self.nodes:
+                # 1- optimize similar connections of the same relation and left optimize them
+                for relation_str in ['up', 'down', 'power', 'sub']:
+                    if SymbolTree.__optimize_multiple_connections_to_left(node, relation_str):
+                        changed = True
+
+    # helper function
+    @staticmethod
+    def __find_relation(all_relations: List[List[Tuple[int, float, str]]], from_node: int, to_node: int) -> \
+            Tuple[int, float, str]:
+        inner_list = all_relations[from_node]
+        try:
+            return next((j, d, r) for j, d, r in inner_list if j == to_node)
+        except StopIteration:
+            raise ValueError(f"could not find relation from {from_node} to {to_node}")
+
+    @staticmethod
+    def __get_leftmost_node(nodes: List['SymbolTreeNode']) -> 'SymbolTreeNode':
+        assert len(nodes) > 0, "cannot find leftmost of an empty list of nodes"
+
+        left_most_node = nodes[0]
+        min_left = left_most_node.crop[0]
+
+        for node in nodes:
+            if node.crop[0] < min_left:
+                left_most_node = node
+                min_left = node.crop[0]
+
+        return left_most_node
+
+    @staticmethod
+    def __sort_by_left_most(nodes: List['SymbolTreeNode']) -> List['SymbolTreeNode']:
+        return sorted(nodes, key=lambda node: node.crop[0])
+
+    @staticmethod
+    def __optimize_multiple_connections_to_left(node: SymbolTreeNode, relation_str: str) -> bool:
+        """
+        This function finds if there are multiple connections to a single relation, it will connect these conections
+        using `left` and finally connect the single left-most node to the parent
+
+        @param node: node to optimize
+        @param relation_str: relation to optimize
+        @return: True if a change is actually occurred, False otherwise
+        """
+        connections = node.relations[relation_str]
+        if len(connections) <= 1:
+            return False
+        sorted_connections = SymbolTree.__sort_by_left_most(connections)
+
+        for i in range(len(sorted_connections) - 1):
+            node_from = sorted_connections[i]
+            node_to = sorted_connections[i + 1]
+
+            node_from.connect_with_relation(node_to, 'left')
+
+        # it is important that we save a copy of the position, as when we remove a connection, it would also
+        # modify the reference to `connections`
+        positions = [n.position for n in connections]
+        for pos in positions:
+            node.remove_connection_with_relation(relation_str, pos)
+
+        node.connect_with_relation(sorted_connections[0], relation_str)
+
+        return True
+
     def __str__(self):
         result = ""
 
@@ -120,48 +226,3 @@ class SymbolTree:
             result += "}\n"
 
         return result
-
-    def add_connection(self, from_node: int, to_node: int, relation: str) -> None:
-        self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
-
-    def remove_connection(self, from_node: int, to_node: int, relation: str) -> None:
-        self.nodes[from_node].remove_connection_with_relation(relation, to_node)
-
-    def draw_min_connections(self, img: Image):
-        all_connections = []
-
-        crops = [
-            node.crop
-            for node in self.nodes
-        ]
-
-        for i, node in enumerate(self.nodes):
-            for relation, connections in node.relations.items():
-                if 'inverse' not in relation and connections:
-                    for inner_node in connections:
-                        all_connections.append((i, inner_node.position))
-
-        return draw_connections(img, crops, all_connections)
-
-    @classmethod
-    def from_image(cls, img: Image) -> 'SymbolTree':
-        labeled_crops = label_crops(img)
-
-        return cls.from_labeled_crops(labeled_crops)
-
-    @classmethod
-    def from_labeled_crops(cls, labeled_crops: LabeledCrops) -> 'SymbolTree':
-        relations = get_all_symbols_relations_connections(labeled_crops)
-        min_tree = get_minimum_spanning_tree_symbol_connections(labeled_crops)
-
-        return cls(labeled_crops, relations, min_tree)
-
-    # helper function
-    @staticmethod
-    def __find_relation(all_relations: List[List[Tuple[int, float, str]]], from_node: int, to_node: int) -> \
-            Tuple[int, float, str]:
-        inner_list = all_relations[from_node]
-        try:
-            return next((j, d, r) for j, d, r in inner_list if j == to_node)
-        except StopIteration:
-            raise ValueError(f"could not find relation from {from_node} to {to_node}")
