@@ -108,8 +108,13 @@ class SymbolTree:
             inner_nodes_list = []
             for relation, inner_nodes in node.relations.items():
                 if inner_nodes:
+                    relation_str = f"{relation}: ["
+                    relation_inner_nodes = []
                     for inner_node in inner_nodes:
-                        inner_nodes_list.append(f"{relation}: {node_str(inner_node)}")
+                        relation_inner_nodes.append(f"{node_str(inner_node)}")
+                    relation_str += ", ".join(relation_inner_nodes)
+                    relation_str += "]"
+                    inner_nodes_list.append(relation_str)
 
             result += ', '.join(inner_nodes_list)
             result += "}\n"
