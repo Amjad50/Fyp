@@ -2,7 +2,8 @@ from typing import List, Tuple, Dict, Callable, Optional
 
 from PIL import Image
 
-from segmenter.labeler import label_crops
+from classifier.classifier import SVMClassifier
+from classifier.labeler import get_labeled_crops
 from utils.types import LabeledCrops, Box
 from .connections import get_all_symbols_relations_connections, get_minimum_spanning_tree_symbol_connections
 from .labeler import draw_connections
@@ -95,8 +96,8 @@ class SymbolTree:
             self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
 
     @classmethod
-    def from_image(cls, img: Image) -> 'SymbolTree':
-        labeled_crops = label_crops(img)
+    def from_image(cls, img: Image, svm_model: SVMClassifier) -> 'SymbolTree':
+        labeled_crops = get_labeled_crops(img, svm_model)
 
         return cls.from_labeled_crops(labeled_crops)
 
@@ -172,7 +173,7 @@ class SymbolTree:
     @staticmethod
     def __optimize_multiple_connections_to_left(node: SymbolTreeNode, relation_str: str) -> bool:
         """
-        This function finds if there are multiple connections to a single relation, it will connect these conections
+        This function finds if there are multiple connections to a single relation, it will connect these connections
         using `left` and finally connect the single left-most node to the parent
 
         @param node: node to optimize

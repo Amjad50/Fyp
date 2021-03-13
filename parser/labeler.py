@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 from classifier.classifier import SVMClassifier
 from classifier.labeler import get_labeled_crops, draw_labeled_crops
 from parser.connections import get_minimum_spanning_tree_symbol_connections
-from segmenter.labeler import label_crops
+from segmenter.labeler import draw_crops_rects
 from segmenter.utils import box_center
 from utils.types import Box
 
@@ -30,7 +30,7 @@ def label_minimum_spanning_tree_symbols_connections(img: Image, svm_model: SVMCl
     labeled_crops = get_labeled_crops(img, svm_model)
     labels, crops = list(zip(*labeled_crops))
 
-    labeled_crops_img = label_crops(img, crops)
+    labeled_crops_img = draw_crops_rects(img, crops)
 
     labeled_img = draw_labeled_crops(labeled_crops_img, labeled_crops)
 

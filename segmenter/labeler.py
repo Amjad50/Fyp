@@ -3,7 +3,7 @@ from PIL import ImageColor, ImageDraw
 from .symbol_segmenter import segment_image_crops
 
 
-def label_crops(img, crops=None):
+def draw_crops_rects(img, crops=None):
     if not crops:
         crops = segment_image_crops(img.convert('1'))
     labeled_img = img.copy()
