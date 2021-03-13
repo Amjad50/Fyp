@@ -142,6 +142,16 @@ class SymbolTree:
                     if SymbolTree.__optimize_multiple_connections_to_left(node, relation_str):
                         changed = True
 
+        changed = True
+        # loop until there is no more optimizations to do
+        while changed:
+            changed = False
+            for node in self.nodes:
+                # 1- optimize similar connections of the same relation and left optimize them
+                for relation_str in ['up', 'down', 'power', 'sub']:
+                    if SymbolTree.__optimize_first_parent_connection(node, relation_str):
+                        changed = True
+
     # helper function
     @staticmethod
     def __find_relation(all_relations: List[List[Tuple[int, float, str]]], from_node: int, to_node: int) -> \
@@ -200,6 +210,45 @@ class SymbolTree:
         node.connect_with_relation(sorted_connections[0], relation_str)
 
         return True
+
+    @staticmethod
+    def __optimize_first_parent_connection(node: SymbolTreeNode, relation_str: str) -> bool:
+        """
+        This function will walk recursively of a connection of a node and reconnect itself will all parents one by one
+        until it find the first parent, and will remove all other connections to the children.
+
+        This is helpful as in `frac` sometimes, the middle element will be connected by `up`/`down` only, so this method
+        will transfer the relation from this middle element to the first element
+
+        @param node: node to optimize
+        @param relation_str: relation to optimize
+        @return: True if a change is actually occurred, False otherwise
+        """
+        connections = node.relations[relation_str]
+
+        if len(connections) == 0:
+            return False
+        if len(connections) > 1:
+            raise ValueError(f"connections of node {node.position} with relation '{relation_str}' must be one")
+
+        connecting_node = connections[0]
+
+        for inner_relation_str in ['power', 'sub', 'left']:
+            if relation_str != inner_relation_str:
+                inner_connections = connecting_node.relations[f'{inner_relation_str}_inverse']
+                if inner_connections:
+                    if len(inner_connections) > 1:
+                        raise ValueError(
+                            f"inner connections of node {node.position} with inner node {connecting_node.position} "
+                            f"relation '{relation_str}' must be one")
+
+                    node.remove_connection_with_relation(relation_str, connecting_node.position)
+                    node.connect_with_relation(inner_connections[0], relation_str)
+
+                    SymbolTree.__optimize_first_parent_connection(node, relation_str)
+                    return True
+
+        return False
 
     def __str__(self):
         result = ""
