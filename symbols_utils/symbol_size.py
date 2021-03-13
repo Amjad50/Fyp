@@ -27,6 +27,8 @@ def get_baseline_height(symbol_name, box):
         height_perc = h / default_h
 
         return h - BELOW_BASELINE_HEIGHT * height_perc
+    elif symbol_name == '=':
+        return h * 1.5
     else:
         return h
 
