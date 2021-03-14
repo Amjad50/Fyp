@@ -12,7 +12,9 @@ SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 
                          'M': (69, 47), 'N': (58, 47), 'O': (48, 51), 'P': (49, 47), 'Q': (48, 62), 'R': (49, 49),
                          'S': (40, 51), 'T': (47, 47), 'U': (47, 49), 'V': (49, 49), 'W': (68, 49), 'X': (57, 47),
                          'Y': (49, 47), 'Z': (46, 47), '=': (46, 16), '-': (42, 3), '+': (46, 46), '\\Sigma': (42, 47),
-                         '\\pi': (37, 31)}
+                         '\\pi': (37, 31),
+                         # it does not matter the size of `frac` since its not always the same
+                         '\\frac': (100, 3), }
 
 HAS_BELOW_BASELINE = 'fgjpqyQ'
 BELOW_BASELINE_HEIGHT = 12
@@ -29,6 +31,8 @@ def get_baseline_height(symbol_name, box):
         return h - BELOW_BASELINE_HEIGHT * height_perc
     elif symbol_name == '=':
         return h * 1.5
+    elif symbol_name == '-':
+        return h * 6
     else:
         return h
 
@@ -52,4 +56,9 @@ def percentage_of_default_size(symbol_name, box):
 
     default_w, default_h = SYMBOLS_DEFAULT_SIZES[symbol_name]
 
-    return max(w / default_w, h / default_h)
+    # special case: because the `-` symbol is small in height, it would mostly stay the same or change only by one pixel
+    # and 1/3 is a large change percentage for one pixel, so we only use width of the character as it is more reliable
+    if symbol_name == '-':
+        return w / default_w
+    else:
+        return max(w / default_w, h / default_h)

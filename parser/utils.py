@@ -41,16 +41,16 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
         else:
             return 'down'
 
-    if label1 == '-' or label2 == '-':
+    if label1 == '\\frac' or label2 == '\\frac':
         angle = angle_between_points(center1, center2)
 
     if perc_perc < 0.85:
-        if -8 >= angle >= -30 and label1 != '-':
+        if -8 >= angle >= -30 and label1 != '\\frac':
             return 'sub'
-        elif 15 <= angle <= 60 and label1 != '-':
+        elif 15 <= angle <= 60 and label1 != '\\frac':
             return 'power'
 
-    if abs(perc_perc - 1) > 0.15 and label1 != '-' and label2 != '-':
+    if abs(perc_perc - 1) > 0.15 and label1 != '\\frac' and label2 != '\\frac':
         # cannot have power, sub or left of smaller symbol to a larger symbol
         if 15 >= angle >= -30:
             return 'none'
@@ -82,11 +82,11 @@ def distance_labeled_crops(label_crop1: LabelCrop, label_crop2: LabelCrop) -> Op
 
     options = [distance_between_points(p1, p2)]
 
-    if label1 == '-' and percentage_of_default_size(label1, box1) > 1:
+    if label1 == '\\frac':
         t, l, d, r = box1
         options.append(distance_between_points((t, l), p2))
 
-    if label2 == '-' and percentage_of_default_size(label2, box2) > 1:
+    if label2 == '\\frac':
         t, l, d, r = box2
         options.append(distance_between_points(p1, (t, r)))
 
