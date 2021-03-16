@@ -152,6 +152,9 @@ class SymbolTree:
                     if SymbolTree.__optimize_first_parent_connection(node, relation_str):
                         changed = True
 
+    def get_root_node(self) -> 'SymbolTreeNode':
+        return self.__get_root_node(self.nodes)
+
     # helper function
     @staticmethod
     def __find_relation(all_relations: List[List[Tuple[int, float, str]]], from_node: int, to_node: int) -> \
@@ -175,6 +178,31 @@ class SymbolTree:
                 min_left = node.crop[0]
 
         return left_most_node
+
+    @staticmethod
+    def __is_root(node: 'SymbolTreeNode') -> bool:
+        for relation_str in RELATIONS:
+            if node.relations[f'{relation_str}_inverse']:
+                return False
+
+        return True
+
+    @staticmethod
+    def __get_root_node(nodes: List['SymbolTreeNode']) -> 'SymbolTreeNode':
+        assert len(nodes) > 0, "cannot find root node of an empty list of nodes"
+
+        # the most probable scenario is that the leftmost node is the root, can't think of a case where the leftmost
+        # is not the root, but nevertheless, we can try to find the root node manually if the leftmost is not it
+        leftmost_node = SymbolTree.__get_leftmost_node(nodes)
+
+        if SymbolTree.__is_root(leftmost_node):
+            return leftmost_node
+
+        for node in nodes:
+            if SymbolTree.__is_root(node):
+                return node
+
+        raise Exception('Could not find root node')
 
     @staticmethod
     def __sort_by_left_most(nodes: List['SymbolTreeNode']) -> List['SymbolTreeNode']:
