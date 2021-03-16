@@ -1,79 +1,14 @@
 import copy
 from itertools import permutations
 
-from PIL import Image
+import cv2
+from PIL import Image, ImageOps
 
 from .simple_identifiers import *
 from .utils import *
 
 
-def segment_char(img, start):
-    """
-    Runs given the image and where it should start,
-    it will go recursively from the starting position and remove every
-    black pixel until there is no more connected black pixels.
-
-    Returns:
-    - the image with the character containing `start` removed.
-    - the box boundaries of the character
-    """
-
-    assert img.dtype == bool
-
-    img = img.copy()
-    result_img_cropped = np.ones_like(img, dtype=bool)
-    h, w = img.shape
-
-    left = right = start[0]
-    top = down = start[1]
-
-    queue = {start}
-    visited = set()
-
-    while queue:
-        now = queue.pop()
-
-        # add to visited
-        visited.add(now)
-
-        # convert the pixel to white
-        # Access in arrays is in `y, x` or `row, col` that's why it is inverted here
-        img[now[1], now[0]] = True
-        # move the into the result img crop
-        result_img_cropped[now[1], now[0]] = False
-
-        if now[0] > right:
-            right = now[0]
-        if now[0] < left:
-            left = now[0]
-        if now[1] > down:
-            down = now[1]
-        if now[1] < top:
-            top = now[1]
-
-        # look trough all 8 surrounding pixels
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if i == 0 and j == 0:
-                    continue
-
-                x = now[0] + i
-                y = now[1] + j
-
-                # in bounds
-                if 0 <= x < w and 0 <= y < h:
-                    # not visited
-                    if (x, y) not in visited:
-                        # black
-                        # Access in arrays is inverted
-                        if not img[y, x]:
-                            queue.add((x, y))
-
-    # the plus 1 is for the extra space we didn't reach
-    return (left, top, right + 1, down + 1), img, result_img_cropped
-
-
-def find_possible_equal_merges(crops, img):
+def find_possible_equal_merges(crops, _img):
     # 1- find all dash symbols
     dash_symbols = list(filter(is_dash_box, crops))
 
@@ -214,19 +149,26 @@ def final_crop_images(crops, cropped_images):
     return result
 
 
-def segment_image(img: Image):
-    img_arr = np.array(img)
-    h, w = img_arr.shape
+def __convert_to_ltrd(bounding_box):
+    l, t, w, h = bounding_box
 
-    crops = []
-    cropped_images = []
-    for x in range(w):
-        for y in range(h):
-            # Access in arrays is inverted because it is in form `row, col` == `y, x`
-            if not img_arr[y, x]:
-                (crop_box, img_arr, result_for_this_crop) = segment_char(img_arr, (x, y))
-                cropped_images.append(result_for_this_crop)
-                crops.append(crop_box)
+    return l, t, l + w, t + h
+
+
+def segment_image(img: Image):
+    gray_inverted_img = np.asarray(ImageOps.invert(img.convert('L')))
+
+    components, _ = cv2.findContours(gray_inverted_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    crops = [__convert_to_ltrd(cv2.boundingRect(c)) for c in components]
+
+    cropped_images = [None] * len(crops)
+    for i, crop in enumerate(crops):
+        img_arr = np.ones_like(gray_inverted_img, dtype=bool)
+        l, t, r, d = crop
+        img_arr[t:d, l:r] = np.asarray(img.crop(crop))
+
+        cropped_images[i] = img_arr
+
     # tries to find symbols that are mergable, like `=`, `:`, `i`, `j`... and merge them
     crops, cropped_images = try_merge_segments(crops, cropped_images, img)
     cropped_images = final_crop_images(crops, cropped_images)
