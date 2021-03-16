@@ -1,3 +1,4 @@
+from re import sub as re_sub
 from typing import Optional
 
 import numpy as np
@@ -106,3 +107,8 @@ def compute_modified_distance(distance: float, relation: str) -> float:
     assert relation in additions
 
     return distance + additions[relation]
+
+
+def optimize_latex_string(input_string: str) -> str:
+    # remove latex brackets if only one character is inside
+    return re_sub(r'{(.)}', '\\1', input_string.replace(' ', ''))
