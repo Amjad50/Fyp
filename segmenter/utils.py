@@ -1,5 +1,6 @@
 from utils.geometry import get_line_intersection
 
+
 def box_size(box):
     left, top, right, down = box
 
@@ -25,7 +26,6 @@ def merge_boxes(box1, box2):
 
 
 def is_another_in_between(box1, box2, boxes):
-
     box1_center = box_center(box1)
     box2_center = box_center(box2)
 

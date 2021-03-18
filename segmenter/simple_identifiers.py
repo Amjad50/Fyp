@@ -1,5 +1,6 @@
-from .utils import box_size
 import numpy as np
+
+from .utils import box_size
 
 
 def black_ratio(box, img):
@@ -11,6 +12,7 @@ def black_ratio(box, img):
     black_count = full_size - white_count
 
     return black_count / full_size
+
 
 # dot signs
 def is_dot_box(box, img):

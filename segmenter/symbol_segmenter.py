@@ -9,7 +9,7 @@ from .simple_identifiers import *
 from .utils import *
 
 
-def find_possible_equal_merges(crops, _img):
+def __find_possible_equal_merges(crops, _img):
     # 1- find all dash symbols
     dash_symbols = list(filter(is_dash_box, crops))
 
@@ -38,7 +38,7 @@ def find_possible_equal_merges(crops, _img):
     return list(filter(lambda x: can_be_equal_sign(x[0], x[1]), permutations(dash_symbols, 2)))
 
 
-def find_possible_colon_merges(crops, img):
+def __find_possible_colon_merges(crops, img):
     # 1- find all dot symbols
     dot_symbols = list(filter(lambda crop: is_dot_box(crop, img), crops))
 
@@ -67,7 +67,7 @@ def find_possible_colon_merges(crops, img):
     return list(filter(lambda x: can_be_colon(x[0], x[1]), permutations(dot_symbols, 2)))
 
 
-def find_possible_i_j_merges(crops, img):
+def __find_possible_i_j_merges(crops, img):
     # 1- find all dot symbols
     dot_symbols = list(filter(lambda crop: is_dot_box(crop, img), crops))
 
@@ -101,13 +101,13 @@ def find_possible_i_j_merges(crops, img):
     return list(filter(lambda x: can_be_i_j(x[0], x[1]), possible_combinations))
 
 
-def merge_cropped_images(cropped_img1, cropped_img2):
+def __merge_cropped_images(cropped_img1, cropped_img2):
     assert cropped_img1.shape == cropped_img2.shape
 
     return cropped_img1 & cropped_img2
 
 
-def merge_segments(crops, cropped_images, possible_merges):
+def __merge_segments(crops, cropped_images, possible_merges):
     if len(possible_merges) != 0:
         crops = copy.deepcopy(crops)
 
@@ -121,7 +121,7 @@ def merge_segments(crops, cropped_images, possible_merges):
 
         crops.append(merge_boxes(c1, c2))
 
-        cropped_images.append(merge_cropped_images(cropped_images[c1_i], cropped_images[c2_i]))
+        cropped_images.append(__merge_cropped_images(cropped_images[c1_i], cropped_images[c2_i]))
 
     for index in sorted(indices_to_remove, reverse=True):
         crops.pop(index)
@@ -130,16 +130,16 @@ def merge_segments(crops, cropped_images, possible_merges):
     return crops, cropped_images
 
 
-def try_merge_segments(crops, cropped_images, img):
+def __try_merge_segments(crops, cropped_images, img):
     # order is important
-    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_equal_merges(crops, img))
-    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_colon_merges(crops, img))
-    crops, cropped_images = merge_segments(crops, cropped_images, find_possible_i_j_merges(crops, img))
+    crops, cropped_images = __merge_segments(crops, cropped_images, __find_possible_equal_merges(crops, img))
+    crops, cropped_images = __merge_segments(crops, cropped_images, __find_possible_colon_merges(crops, img))
+    crops, cropped_images = __merge_segments(crops, cropped_images, __find_possible_i_j_merges(crops, img))
 
     return crops, cropped_images
 
 
-def final_crop_images(crops, cropped_images):
+def __final_crop_images(crops, cropped_images):
     assert len(crops) == len(cropped_images)
 
     result = []
@@ -171,8 +171,8 @@ def segment_image(img: Image):
         cropped_images[i] = img_arr
 
     # tries to find symbols that are mergable, like `=`, `:`, `i`, `j`... and merge them
-    crops, cropped_images = try_merge_segments(crops, cropped_images, img)
-    cropped_images = final_crop_images(crops, cropped_images)
+    crops, cropped_images = __try_merge_segments(crops, cropped_images, img)
+    cropped_images = __final_crop_images(crops, cropped_images)
 
     def sort_key(crop_image: Tuple) -> int:
         l, _t, r, _d = crop_image[0]
