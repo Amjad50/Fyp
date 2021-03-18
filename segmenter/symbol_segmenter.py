@@ -1,5 +1,6 @@
 import copy
 from itertools import permutations
+from typing import Tuple
 
 import cv2
 from PIL import Image, ImageOps
@@ -173,7 +174,15 @@ def segment_image(img: Image):
     crops, cropped_images = try_merge_segments(crops, cropped_images, img)
     cropped_images = final_crop_images(crops, cropped_images)
 
-    return list(zip(crops, cropped_images))
+    def sort_key(crop_image: Tuple) -> int:
+        l, _t, r, _d = crop_image[0]
+
+        return l * 1000 - r
+
+    crops_images = list(zip(crops, cropped_images))
+
+    # return sorted segments from left to right
+    return sorted(crops_images, key=sort_key)
 
 
 def segment_image_crops(img: Image):

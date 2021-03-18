@@ -15,8 +15,8 @@ class SegmenterTestCase(unittest.TestCase):
 
         self.assertEqual(len(image_segments), 7)
         self.assertListEqual(image_segments,
-                             [(190, 93, 225, 96), (193, 113, 221, 159), (196, 19, 219, 65), (93, 87, 139, 103),
-                              (149, 82, 156, 112), (16, 66, 34, 113), (37, 66, 65, 126)])
+                             [(16, 66, 34, 113), (37, 66, 65, 126), (93, 87, 139, 103), (149, 82, 156, 112),
+                              (190, 93, 225, 96), (193, 113, 221, 159), (196, 19, 219, 65)])
 
     def test_dot_on_frac(self):
         """
@@ -29,11 +29,12 @@ class SegmenterTestCase(unittest.TestCase):
         dot_on_frac_img = Image.open('./testing_dataset/dot_on_frac.png')
         image_segments = segment_image_crops(dot_on_frac_img)
 
+        print(image_segments)
         self.assertEqual(len(image_segments), 11)
         self.assertListEqual(image_segments,
-                             [(22, 93, 227, 96), (52, 19, 75, 65), (86, 58, 93, 65), (102, 19, 130, 65),
-                              (137, 19, 166, 67), (144, 113, 167, 159), (171, 18, 202, 65), (179, 152, 186, 159),
-                              (195, 113, 223, 161), (69, 134, 115, 150), (24, 113, 42, 160)])
+                             [(22, 93, 227, 96), (24, 113, 42, 160), (52, 19, 75, 65), (69, 134, 115, 150),
+                              (86, 58, 93, 65), (102, 19, 130, 65), (137, 19, 166, 67), (144, 113, 167, 159),
+                              (171, 18, 202, 65), (179, 152, 186, 159), (195, 113, 223, 161)])
 
 
 if __name__ == '__main__':
