@@ -24,6 +24,11 @@ class SymbolTree:
 
             self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
 
+        # as the tree need optimized connections to generate latex without problems, we must enforce it.
+        # but the method will be kept public, as a user can change connections manually, in that case
+        # they must call `optimize_connections` to keep the tree clean.
+        self.optimize_connections()
+
     @classmethod
     def from_image(cls, img: Image, svm_model: SVMClassifier) -> 'SymbolTree':
         labeled_crops = get_labeled_crops(img, svm_model)
