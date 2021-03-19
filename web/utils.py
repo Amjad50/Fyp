@@ -12,6 +12,9 @@ def json_arguments(required_args: List[Tuple[str, type]], optional_args: Optiona
         def wrapper():
             json_data = request.get_json()
 
+            if json_data is None:
+                abort(400, "Must specify `json` data body")
+
             for (name, ty) in required_args:
                 # for required args, make sure the arg is present and is of the required type
                 if name not in json_data:
