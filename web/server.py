@@ -1,12 +1,14 @@
 from base64 import b64decode
 from io import BytesIO
-from os import path
+from os import path, remove as os_remove_file
+from tempfile import mkdtemp, mktemp
 
 from PIL import Image
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 
 from classifier.classifier import SVMClassifier
 from classifier.labeler import get_labeled_crops, draw_labeled_crops
+from dataset_generator.generator import generate_single_from_template
 from segmenter.labeler import draw_crops_rects
 from segmenter.symbol_segmenter import segment_image_crops
 from .utils import json_arguments, response_image
@@ -15,6 +17,8 @@ app = Flask(__name__)
 
 _svm_file_path = path.join(path.dirname(__file__), "..", "model", "svm.pkl")
 svm_model = SVMClassifier(_svm_file_path)
+
+generation_temp_folder = mkdtemp(prefix="latex_generation")
 
 
 # return 400 errors in json format
@@ -86,6 +90,39 @@ def api_draw_labeled_crops(json_data):
     output_img = draw_labeled_crops(second_stage_img, labeled_crops)
 
     return response_image(output_img)
+
+
+@app.route('/api/v1/generate_latex', methods=["GET"])
+@json_arguments([('template', str)])
+def api_generate_latex(json_data):
+    img_filename = mktemp(prefix="latex_img", dir=generation_temp_folder)
+
+    try:
+        generate_single_from_template(json_data['template'], generation_temp_folder, path.basename(img_filename))
+    # here `ValueError` is meant to only catch the formatting error that may happen due to wrong template from the user
+    except ValueError as e:
+        abort(400, f"Error in formatting: {e}")
+
+    img = Image.open(img_filename + ".png")
+
+    # remove the file after generation as they are not needed now
+    os_remove_file(img_filename + ".png")
+
+    return response_image(img)
+
+
+@app.route('/api/v1/latex_template_variables', methods=["GET"])
+def api_latex_template_variables():
+    # TODO: this is very manual, and in case of any change in the generation module we would need to change this.
+    #  so fix this
+    return {
+        'variables': [
+            "digit[1-5]: a single digit",
+            "num[1-5]: a number from -1000 to 1000",
+            "latin[1-5]: a single ascii (upper/lower)case letter",
+            "operator[1-5]: a single operator character from ['+', '-', '=']",
+        ]
+    }
 
 
 def run_server():
