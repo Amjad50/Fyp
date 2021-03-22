@@ -153,6 +153,21 @@ def api_draw_symbol_tree(json_data):
     return response_image(output_img)
 
 
+@app.route('/api/v1/predict_latex', methods=["GET"])
+@json_arguments([('image', str)], [('optimize', bool, True)])
+def api_predict_latex(json_data):
+    image_raw = b64decode(json_data['image'])
+    image_bytes_io = BytesIO(image_raw)
+
+    img = Image.open(image_bytes_io).convert('1')
+
+    tree = SymbolTree.from_image(img, svm_model)
+
+    latex_string = tree.get_latex_string(optimize=json_data['optimize'])
+
+    return {"latex": latex_string}
+
+
 @app.route('/api/v1/generate_latex', methods=["GET"])
 @json_arguments([('template', str)])
 def api_generate_latex(json_data):
