@@ -34,7 +34,7 @@ def api_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io)
+    img = Image.open(image_bytes_io).convert('1')
 
     crops = segment_image_crops(img)
 
@@ -49,7 +49,7 @@ def api_draw_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io)
+    img = Image.open(image_bytes_io).convert('1')
 
     output_img = draw_crops_rects(img)
 
@@ -62,7 +62,7 @@ def api_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io)
+    img = Image.open(image_bytes_io).convert('1')
 
     labeled_crops = get_labeled_crops(img, svm_model)
 
@@ -77,7 +77,7 @@ def api_draw_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io)
+    img = Image.open(image_bytes_io).convert('1')
 
     labeled_crops = get_labeled_crops(img, svm_model)
     labels, crops = list(zip(*labeled_crops))
@@ -99,7 +99,7 @@ def api_symbol_tree(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io)
+    img = Image.open(image_bytes_io).convert('1')
 
     tree = SymbolTree.from_image(img, svm_model)
     tree_nodes_data = []
