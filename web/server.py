@@ -125,6 +125,34 @@ def api_symbol_tree(json_data):
     return {"tree": tree_nodes_data}
 
 
+@app.route('/api/v1/draw_symbol_tree', methods=["GET"])
+@json_arguments([('image', str)], [('no_crops', bool, False), ('no_labels', bool, False)])
+def api_draw_symbol_tree(json_data):
+    image_raw = b64decode(json_data['image'])
+    image_bytes_io = BytesIO(image_raw)
+
+    img = Image.open(image_bytes_io).convert('1')
+
+    labeled_crops = get_labeled_crops(img, svm_model)
+    labels, crops = list(zip(*labeled_crops))
+
+    tree = SymbolTree.from_labeled_crops(labeled_crops)
+
+    if json_data['no_crops']:
+        second_stage_img = img
+    else:
+        second_stage_img = draw_crops_rects(img, crops)
+
+    if json_data['no_labels']:
+        third_stage_img = second_stage_img
+    else:
+        third_stage_img = draw_labeled_crops(second_stage_img, labeled_crops)
+
+    output_img = tree.draw_min_connections(third_stage_img)
+
+    return response_image(output_img)
+
+
 @app.route('/api/v1/generate_latex', methods=["GET"])
 @json_arguments([('template', str)])
 def api_generate_latex(json_data):
