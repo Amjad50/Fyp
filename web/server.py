@@ -9,6 +9,7 @@ from flask import Flask, jsonify, abort
 from classifier.classifier import SVMClassifier
 from classifier.labeler import get_labeled_crops, draw_labeled_crops
 from dataset_generator.generator import generate_single_from_template
+from parser.tree import SymbolTree
 from segmenter.labeler import draw_crops_rects
 from segmenter.symbol_segmenter import segment_image_crops
 from .utils import json_arguments, response_image
@@ -90,6 +91,38 @@ def api_draw_labeled_crops(json_data):
     output_img = draw_labeled_crops(second_stage_img, labeled_crops)
 
     return response_image(output_img)
+
+
+@app.route('/api/v1/symbol_tree', methods=["GET"])
+@json_arguments([('image', str)])
+def api_symbol_tree(json_data):
+    image_raw = b64decode(json_data['image'])
+    image_bytes_io = BytesIO(image_raw)
+
+    img = Image.open(image_bytes_io)
+
+    tree = SymbolTree.from_image(img, svm_model)
+    tree_nodes_data = []
+
+    for node in tree.nodes:
+        single_node_data = dict()
+        tree_nodes_data.append(single_node_data)
+
+        single_node_data['position'] = node.position
+        single_node_data['label'] = node.label
+        node_relations_data = dict()
+        single_node_data['relations'] = node_relations_data
+
+        for relation_name, children in node.relations.items():
+            # if a main relation and has members
+            if 'inverse' not in relation_name and len(children) > 0:
+                children_relations_positions = []
+                node_relations_data[relation_name] = children_relations_positions
+
+                for child_node in children:
+                    children_relations_positions.append(child_node.position)
+
+    return {"tree": tree_nodes_data}
 
 
 @app.route('/api/v1/generate_latex', methods=["GET"])
