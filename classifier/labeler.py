@@ -84,7 +84,7 @@ def __is_frac(frac_crop: Box, crops: List[Box]) -> bool:
         raise Exception("WHAT? somehow there is an element on top/down of frac but not the other side\n"
                         f"frac crop is {frac_crop}")
 
-    return False
+    return top_found and down_found
 
 
 def __fix_frac_symbols(labeled_crops: LabeledCrops) -> LabeledCrops:
