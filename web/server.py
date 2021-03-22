@@ -177,7 +177,11 @@ def api_generate_latex(json_data):
         generate_single_from_template(json_data['template'], generation_temp_folder, path.basename(img_filename))
     # here `ValueError` is meant to only catch the formatting error that may happen due to wrong template from the user
     except ValueError as e:
-        abort(400, f"Error in formatting: {e}")
+        abort(400, f"Error in formatting: {e}, try use double curly brackets")
+    except KeyError as e:
+        abort(400, f"Error in formatting: {e}, try use double curly brackets")
+    except IndexError as e:
+        abort(400, f"Error in formatting: {e}, try use double curly brackets")
 
     img = Image.open(img_filename + ".png")
 
