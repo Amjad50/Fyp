@@ -168,9 +168,9 @@ def api_predict_latex(json_data):
     return {"latex": latex_string}
 
 
-@app.route('/api/v1/generate_latex', methods=["GET"])
+@app.route('/api/v1/compile_latex', methods=["GET"])
 @json_arguments([('template', str)])
-def api_generate_latex(json_data):
+def api_compile_latex(json_data):
     img_filename = mktemp(prefix="latex_img", dir=generation_temp_folder)
 
     try:
