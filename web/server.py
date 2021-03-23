@@ -4,7 +4,7 @@ from os import path, remove as os_remove_file
 from tempfile import mkdtemp, mktemp
 
 from PIL import Image
-from flask import Flask, jsonify, abort, render_template
+from flask import Flask, jsonify, abort, render_template, request
 
 from classifier.classifier import SVMClassifier
 from classifier.labeler import get_labeled_crops, draw_labeled_crops
@@ -169,12 +169,16 @@ def api_predict_latex(json_data):
 
 
 @app.route('/api/v1/compile_latex', methods=["GET"])
-@json_arguments([('template', str)])
-def api_compile_latex(json_data):
+def api_compile_latex():
+    template = request.args.get('template')
+
+    if template is None:
+        abort(400, "Please specify `template` argument")
+
     img_filename = mktemp(prefix="latex_img", dir=generation_temp_folder)
 
     try:
-        generate_single_from_template(json_data['template'], generation_temp_folder, path.basename(img_filename))
+        generate_single_from_template(template, generation_temp_folder, path.basename(img_filename))
     # here `ValueError` is meant to only catch the formatting error that may happen due to wrong template from the user
     except ValueError as e:
         abort(400, f"Error in formatting: {e}, try use double curly brackets")
