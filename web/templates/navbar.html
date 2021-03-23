@@ -1,0 +1,28 @@
+{% set nav_bar_data = [
+    ('/', 'Home'),
+    ('/latex_compiler', 'LaTeX compiler'),
+] %}
+
+<div class="navbar navbar-expand-lg navbar-dark bg-dark text-white p-2">
+    {# nav company logo #}
+    <a href="#" class="navbar-brand">LaTeX predictor</a>
+
+    {# nav button will show on mobile and small displays #}
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    {# the nav menu#}
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            {# loop through all data, and if the current url is the same as `href` then set `active` class #}
+            {% for href, display_name in nav_bar_data %}
+                <li class="nav-item">
+                    <a class="nav-link {% if url_for(request.endpoint) == href %}active{% endif %}" aria-current="page"
+                       href="{{ href }}">{{ display_name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>

@@ -4,7 +4,7 @@ from os import path, remove as os_remove_file
 from tempfile import mkdtemp, mktemp
 
 from PIL import Image
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, abort, render_template
 
 from classifier.classifier import SVMClassifier
 from classifier.labeler import get_labeled_crops, draw_labeled_crops
@@ -203,6 +203,16 @@ def api_latex_template_variables():
             "operator[1-5]: a single operator character from ['+', '-', '=']",
         ]
     }
+
+
+@app.route('/')
+def page_home():
+    return render_template('home.html')
+
+
+@app.route('/latex_compiler')
+def page_latex_compiler():
+    return render_template('latex_compiler.html')
 
 
 def run_server():
