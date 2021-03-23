@@ -2,7 +2,43 @@
 
 {% block title %}LaTeX Compiler{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.css"
+          integrity="sha512-xIf9AdJauwKIVtrVRZ0i4nHP61Ogx9fSRAkCLecmE2dL/U8ioWpDvFCAy4dcfecN72HHB9+7FfQj3aiO68aaaw=="
+          crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/theme/dracula.min.css"
+          integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A=="
+          crossorigin="anonymous"/>
+{% endblock %}
+
 {% block content %}
     {{ super() }}
-    <p>latex compiler</p>
+
+    <form class="container my-3" id="latex_input_form">
+        <div class="row">
+            <div class="form-floating">
+                <textarea class="form-control" id="latex_input" rows="2" readonly style="height: 100px;"></textarea>
+                <label for="latex_input">LaTeX Input</label>
+            </div>
+        </div>
+        <div class="row text-center my-3">
+            <div class="col">
+                <button type="submit" class="btn btn-primary mb-3">Compile</button>
+            </div>
+        </div>
+
+        <div class="row text-center my-3">
+            <div id="latex_output_container" class="col">
+            </div>
+        </div>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"
+            integrity="sha512-hc0zo04EIwTzKLvp2eycDTeIUuvoGYYmFIjYx7DmfgQeZPC5N27sPG2wEQPq8d8fCTwuguLrI1ffatqxyTbHJw=="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/mode/stex/stex.min.js"
+            integrity="sha512-l+FnIuYCa5e8wQFlCV4yk2dQH74HjZJkYaiyY3udIQnAJ4w48RiPmbX1MSX70XGlyTWawj/CFgCrDTSRDA6tJw=="
+            crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/latex_compiler.js') }}"></script>
 {% endblock %}
