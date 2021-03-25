@@ -4,6 +4,11 @@ let img;
 function initialize_code_mirror_editor() {
     code_mirror_editor = CodeMirror.fromTextArea(document.getElementById('latex_input'), {
         mode: "stex", theme: "dracula", lineNumbers: true, inMathMode: true,
+        extraKeys: {
+            "Ctrl-Enter": function() {
+                compile_latex_input_field();
+            }
+        }
     });
 }
 
@@ -41,6 +46,23 @@ function compile_latex_and_update_input(latex_input) {
     code_mirror_editor.getDoc().setValue(latex_input);
 }
 
+function compile_latex_input_field() {
+    let latex_input = code_mirror_editor.getValue();
+
+    latex_input = fix_brackets(latex_input);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('template', latex_input);
+
+    // window.location.search = urlParams.toString();
+    let new_url = window.location.href.split('?')[0];
+    new_url += "?" + urlParams.toString();
+
+    window.history.pushState({template: latex_input}, "", new_url);
+
+    compile_latex(latex_input);
+}
+
 function add_latex_input_form_submit_handler() {
     let form = $('#latex_input_form');
 
@@ -48,20 +70,7 @@ function add_latex_input_form_submit_handler() {
         // we don't want to be transferred to another page
         event.preventDefault();
 
-        let latex_input = $('#latex_input')[0].value;
-
-        latex_input = fix_brackets(latex_input);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('template', latex_input);
-
-        // window.location.search = urlParams.toString();
-        let new_url = window.location.href.split('?')[0];
-        new_url += "?" + urlParams.toString();
-
-        window.history.pushState({template: latex_input}, "", new_url);
-
-        compile_latex(latex_input);
+        compile_latex_input_field();
     });
 }
 
