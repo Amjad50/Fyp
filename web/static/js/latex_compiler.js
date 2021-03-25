@@ -30,6 +30,7 @@ function fix_brackets(latex_input) {
 
 
 function compile_latex(latex_input) {
+    latex_input = fix_brackets(latex_input);
 
     let url = '/api/v1/compile_latex?template=' + encodeURIComponent(latex_input);
 
@@ -48,8 +49,6 @@ function compile_latex_and_update_input(latex_input) {
 
 function compile_latex_input_field() {
     let latex_input = code_mirror_editor.getValue();
-
-    latex_input = fix_brackets(latex_input);
 
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('template', latex_input);
