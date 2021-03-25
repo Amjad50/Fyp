@@ -4,9 +4,12 @@
 
 {% block head %}
     {{ super() }}
+    <!-- CodeMirror main styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.css"
           integrity="sha512-xIf9AdJauwKIVtrVRZ0i4nHP61Ogx9fSRAkCLecmE2dL/U8ioWpDvFCAy4dcfecN72HHB9+7FfQj3aiO68aaaw=="
           crossorigin="anonymous"/>
+
+    <!-- CodeMirror Dracula theme styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/theme/dracula.min.css"
           integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A=="
           crossorigin="anonymous"/>
@@ -15,15 +18,19 @@
 {% block content %}
     {{ super() }}
 
+    <!-- Form containing one textarea and one button, the textarea is handled by CodeMirror, and on
+         Button press or `Ctrl-Enter` press, the code will be compiled into an expression Image and displayed -->
     <form class="container my-3" id="latex_input_form">
         <div class="row">
             <div class="form-floating">
+                <!-- LaTeX input -->
                 <textarea class="form-control" id="latex_input" rows="2" readonly style="height: 100px;"></textarea>
                 <label for="latex_input">LaTeX Input</label>
             </div>
         </div>
         <div class="row text-center my-3">
             <div class="col">
+                <!-- Compiler trigger -->
                 <button type="submit" class="btn btn-primary mb-3">Compile (Ctrl-Enter)</button>
             </div>
         </div>
@@ -32,16 +39,21 @@
             <div class="card-header bg-secondary text-white">
                 Output
             </div>
+            <!-- Output image container, will be created after first compile -->
             <div id="latex_output_container" class="col text-center" style="min-height: 100px">
             </div>
         </div>
     </form>
 
+    <!-- CodeMirror main script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"
             integrity="sha512-hc0zo04EIwTzKLvp2eycDTeIUuvoGYYmFIjYx7DmfgQeZPC5N27sPG2wEQPq8d8fCTwuguLrI1ffatqxyTbHJw=="
             crossorigin="anonymous"></script>
+    <!-- CodeMirror `LaTeX` mode support -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/mode/stex/stex.min.js"
             integrity="sha512-l+FnIuYCa5e8wQFlCV4yk2dQH74HjZJkYaiyY3udIQnAJ4w48RiPmbX1MSX70XGlyTWawj/CFgCrDTSRDA6tJw=="
             crossorigin="anonymous"></script>
+
+    <!-- The script and logic for this page -->
     <script src="{{ url_for('static', filename='js/latex_compiler.js') }}"></script>
 {% endblock %}

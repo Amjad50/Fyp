@@ -17,6 +17,8 @@ function fix_brackets(latex_input) {
     let just_encountered_bracket = null;
     for (let c of latex_input) {
         output += c;
+        // add a duplicate bracket only if its a bracket and its the first one, meaning that 2 brackets will only become
+        // 3 and not 4, meaning that we only add 1 for each group of brackets
         if ((c === '}' || c === '{') && just_encountered_bracket !== c) {
             output += c;
             just_encountered_bracket = c;
@@ -35,12 +37,15 @@ function compile_latex(latex_input) {
     let url = '/api/v1/compile_latex?template=' + encodeURIComponent(latex_input);
 
     if (!img) {
+        // create the image for the first time
         img = $('<img src="" alt="LaTeX compiled image display"/>');
         $('#latex_output_container').append(img);
     }
     img.attr('src', url);
 }
 
+// this function is used only an input latex is got not from the text input, this can be from the url,
+// or from history popState
 function compile_latex_and_update_input(latex_input) {
     compile_latex(latex_input);
 
@@ -48,12 +53,13 @@ function compile_latex_and_update_input(latex_input) {
 }
 
 function compile_latex_input_field() {
+    // get the value of the input
     let latex_input = code_mirror_editor.getValue();
 
+    // update the input into the url by using `history.pushState`
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('template', latex_input);
 
-    // window.location.search = urlParams.toString();
     let new_url = window.location.href.split('?')[0];
     new_url += "?" + urlParams.toString();
 
@@ -79,7 +85,8 @@ function add_history_pop_state_handler() {
             if (event.state) {
                 compile_latex_and_update_input(event.state.template);
             } else {
-                // no state, meaning that this it the start
+                // no state, meaning that this is the start, so compile an empty image, another option is to remove
+                // the image, but not sure which is best
                 compile_latex_and_update_input("");
             }
         }
