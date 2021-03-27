@@ -42,6 +42,10 @@ function predict_latex_and_update_output_preview(img_base64) {
         data: JSON.stringify({image: img_base64, optimize: true}),
     }).done(function (data) {
         code_mirror_output_latex.getDoc().setValue(data['latex']);
+        // build url to go to `latex_compiler` for the user to compare the two images
+        let compile_url = '/latex_compiler';
+        compile_url += `?template=${encodeURIComponent(data['latex'])}`;
+        $("#compile_output_latex_button").attr('href', compile_url);
     }).fail(function (ajax_obj, textStatus, errorThrown) {
         console.error(`predict_latex request failed`, textStatus, errorThrown)
     })
