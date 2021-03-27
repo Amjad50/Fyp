@@ -28,7 +28,7 @@ def resource_not_found(e):
     return jsonify(error=str(e)), 400
 
 
-@app.route('/api/v1/image_segments', methods=["GET"])
+@app.route('/api/v1/image_segments', methods=["POST"])
 @json_arguments([('image', str)])
 def api_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
@@ -43,7 +43,7 @@ def api_image_segments(json_data):
     }
 
 
-@app.route('/api/v1/draw_image_segments', methods=["GET"])
+@app.route('/api/v1/draw_image_segments', methods=["POST"])
 @json_arguments([('image', str)])
 def api_draw_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
@@ -56,7 +56,7 @@ def api_draw_image_segments(json_data):
     return response_image(output_img)
 
 
-@app.route('/api/v1/labeled_crops', methods=["GET"])
+@app.route('/api/v1/labeled_crops', methods=["POST"])
 @json_arguments([('image', str)])
 def api_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
@@ -71,7 +71,7 @@ def api_labeled_crops(json_data):
     }
 
 
-@app.route('/api/v1/draw_labeled_crops', methods=["GET"])
+@app.route('/api/v1/draw_labeled_crops', methods=["POST"])
 @json_arguments([('image', str)], [('no_crops', bool, False)])
 def api_draw_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
@@ -93,7 +93,7 @@ def api_draw_labeled_crops(json_data):
     return response_image(output_img)
 
 
-@app.route('/api/v1/symbol_tree', methods=["GET"])
+@app.route('/api/v1/symbol_tree', methods=["POST"])
 @json_arguments([('image', str)])
 def api_symbol_tree(json_data):
     image_raw = b64decode(json_data['image'])
@@ -125,7 +125,7 @@ def api_symbol_tree(json_data):
     return {"tree": tree_nodes_data}
 
 
-@app.route('/api/v1/draw_symbol_tree', methods=["GET"])
+@app.route('/api/v1/draw_symbol_tree', methods=["POST"])
 @json_arguments([('image', str)], [('no_crops', bool, False), ('no_labels', bool, False)])
 def api_draw_symbol_tree(json_data):
     image_raw = b64decode(json_data['image'])
@@ -153,7 +153,7 @@ def api_draw_symbol_tree(json_data):
     return response_image(output_img)
 
 
-@app.route('/api/v1/predict_latex', methods=["GET"])
+@app.route('/api/v1/predict_latex', methods=["POST"])
 @json_arguments([('image', str)], [('optimize', bool, True)])
 def api_predict_latex(json_data):
     image_raw = b64decode(json_data['image'])
