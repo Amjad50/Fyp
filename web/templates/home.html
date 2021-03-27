@@ -2,7 +2,63 @@
 
 {% block title %}LaTeX Predictor{% endblock %}
 
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% set images_previews_data = [
+    ["Segmentation", "segmentation_img_container"],
+    ["Classification", "classification_img_container"],
+    ["Parsing", "parsing_img_container"],
+] %}
+
 {% block content %}
     {{ super() }}
-    <p>home</p>
+
+    <form class="container my-3" id="equation_img_input_form">
+        <!-- The input file (accepts only images) -->
+        <div class="row">
+            <label for="equation_img_file_input" class="form-label">Input a Mathematical expression image file</label>
+            <input class="form-control" type="file" accept="image/*" id="equation_img_file_input">
+        </div>
+
+        <!-- Submit button -->
+        <div class="row text-center my-3">
+            <div class="col">
+                <!-- Predict trigger -->
+                <button type="submit" class="btn btn-primary mb-3">Predict</button>
+            </div>
+        </div>
+
+        <!-- The first output row, that shows a preview of the input image, it is updated on file selection,
+             i.e. before pressing submit -->
+        <div class="card row my-3">
+            <div class="card-header bg-secondary text-white">
+                Input Image
+            </div>
+            <!-- When the user uploads an image, a preview of it is shown here -->
+            <div id="input_img_preview_container" class="col text-center" style="min-height: 100px">
+            </div>
+        </div>
+
+        <!-- The second output row, shows images preview of the `segmentation`, `classification` and `parsing`
+             stages of the system. They are updated on the submit button press, as they communicate with the backend
+             and we don't want to make it call the backend on every file change if the user does not want to. -->
+        <div class="row my-3 gap-2">
+            {% for header_label, img_container_id in images_previews_data %}
+                <div class="card col p-0">
+                    <div class="card-header bg-output-result text-white">
+                        {{ header_label }}
+                    </div>
+                    <!-- When the user uploads an image, a preview of it is shown here -->
+                    <div id="{{ img_container_id }}" class="col text-center" style="min-height: 100px">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+
+
+    <!-- The script and logic for this page -->
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 {% endblock %}
