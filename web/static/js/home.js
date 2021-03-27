@@ -4,6 +4,8 @@ let segmentation_img;
 let classification_img;
 let parsing_img;
 
+let code_mirror_output_latex;
+
 function add_input_image_change_handler() {
     $("#equation_img_file_input").on('change', function (event) {
         const files = event.target.files;
@@ -30,6 +32,19 @@ function add_input_image_change_handler() {
             reader.readAsDataURL(img_file);
         }
     });
+}
+
+function predict_latex_and_update_output_preview(img_base64) {
+    $.ajax({
+        url: 'api/v1/predict_latex',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({image: img_base64, optimize: true}),
+    }).done(function (data) {
+        code_mirror_output_latex.getDoc().setValue(data['latex']);
+    }).fail(function (ajax_obj, textStatus, errorThrown) {
+        console.error(`predict_latex request failed`, textStatus, errorThrown)
+    })
 }
 
 function run_prediction_for_image() {
@@ -92,6 +107,8 @@ function run_prediction_for_image() {
             console.error(`${api_call} request failed`, textStatus, errorThrown)
         })
     }
+
+    predict_latex_and_update_output_preview(img_base64);
 }
 
 function add_image_submit_handler() {
@@ -105,6 +122,15 @@ function add_image_submit_handler() {
     });
 }
 
+function initialize_code_mirror_output_preview() {
+    code_mirror_output_latex = CodeMirror.fromTextArea(document.getElementById('latex_output'), {
+        mode: "stex", theme: "dracula", lineNumbers: true, inMathMode: true, readOnly: true,
+    });
+}
+
 add_input_image_change_handler();
 
 add_image_submit_handler();
+
+// Add the `CodeMirror` editor to the output LaTeX preview
+initialize_code_mirror_output_preview();
