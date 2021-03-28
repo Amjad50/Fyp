@@ -201,10 +201,10 @@ def api_latex_template_variables():
     #  so fix this
     return {
         'variables': [
-            "digit[1-5]: a single digit",
-            "num[1-5]: a number from -1000 to 1000",
-            "latin[1-5]: a single ascii (upper/lower)case letter",
-            "operator[1-5]: a single operator character from ['+', '-', '=']",
+            ["digit", [1, 5], "A single digit"],
+            ["num", [1, 5], "A number from -1000 to 1000"],
+            ["latin", [1, 5], "A single ascii (upper/lower)case letter"],
+            ["operator", [1, 5], "A single operator character from ['+', '-', '=']"],
         ]
     }
 
@@ -216,7 +216,7 @@ def page_home():
 
 @app.route('/latex_compiler')
 def page_latex_compiler():
-    return render_template('latex_compiler.html')
+    return render_template('latex_compiler.html', template_variables=api_latex_template_variables())
 
 
 def run_server():

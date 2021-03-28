@@ -69,12 +69,9 @@ function compile_latex_input_field() {
 }
 
 function add_latex_input_form_submit_handler() {
-    let form = $('#latex_input_form');
+    let submit_button = $('#latex_input_submit_button');
 
-    form.on('submit', function (event) {
-        // we don't want to be transferred to another page
-        event.preventDefault();
-
+    submit_button.on('click', function (event) {
         compile_latex_input_field();
     });
 }
@@ -100,6 +97,11 @@ function compile_params() {
     if (template) {
         compile_latex_and_update_input(template);
     }
+}
+
+function insert_random_variable(variable_name) {
+    code_mirror_editor.replaceSelection(`{{${variable_name}}}`);
+    code_mirror_editor.focus();
 }
 
 // Add the `CodeMirror` editor

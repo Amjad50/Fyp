@@ -20,7 +20,7 @@
 
     <!-- Form containing one textarea and one button, the textarea is handled by CodeMirror, and on
          Button press or `Ctrl-Enter` press, the code will be compiled into an expression Image and displayed -->
-    <form class="container my-3" id="latex_input_form">
+    <div class="container my-3">
         <div class="row">
             <div class="form-floating">
                 <!-- LaTeX input -->
@@ -29,10 +29,38 @@
             </div>
         </div>
 
+        <!-- Toolbar for random variables -->
+        <div class="row">
+            <div class="col text-center">
+                <div class="btn-group mt-3 mx-auto" role="toolbar">
+                    {% for variable_name, variable_range, variable_description in template_variables['variables'] %}
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownMenuLink{{ variable_name }}"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <!-- Show the tooltip using inner `data-bs-toggle` using span -->
+                                <span data-bs-toggle="tooltip"
+                                      title="{{ variable_description }}">{{ variable_name }}</span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ variable_name }}">
+                                {% for i in range(variable_range[0], variable_range[1] + 1) %}
+                                    <li>
+                                        <!-- on button click, call the insert random variable function with the variable
+                                             to be inserted into the CodeMirror editor -->
+                                        <button class="dropdown-item"
+                                                onclick="insert_random_variable('{{ variable_name ~ i }}')">{{ i }}</button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
         <div class="row text-center my-3">
             <div class="col">
                 <!-- Compiler trigger -->
-                <button type="submit" class="btn btn-primary mb-3">Compile (Ctrl-Enter)</button>
+                <button id="latex_input_submit_button" class="btn btn-primary mb-3">Compile (Ctrl-Enter)</button>
             </div>
         </div>
 
@@ -44,7 +72,7 @@
             <div id="latex_output_container" class="col text-center" style="min-height: 100px">
             </div>
         </div>
-    </form>
+    </div>
 
     <!-- CodeMirror main script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"
