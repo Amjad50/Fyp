@@ -33,6 +33,10 @@
         <div class="row">
             <div class="col text-center">
                 <div class="btn-group mt-3 mx-auto" role="toolbar">
+                    <button class="btn btn-secondary" data-bs-toggle="tooltip"
+                            title="On each compilation, the variable data will change, same variable will share the same data between all instances">
+                        Choose random variable:
+                    </button>
                     {% for variable_name, variable_range, variable_description in template_variables['variables'] %}
                         <div class="btn-group">
                             <button class="btn btn-outline-secondary dropdown-toggle" type="button"
