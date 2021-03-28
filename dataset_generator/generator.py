@@ -1,7 +1,7 @@
+import csv
 import os
 import subprocess
 import sys
-import csv
 from os import path
 from random import randint, choice
 from string import ascii_letters
@@ -16,6 +16,7 @@ operators = "+-="
 
 def _get_random_num():
     return randint(-1000, 1000)
+
 
 def _get_random_digit():
     return randint(0, 10)
@@ -48,6 +49,7 @@ def fix_signs(expr):
         .replace('+-', '-') \
         .replace('+ -', '-')
 
+
 def fill_expression_template(template):
     return fix_signs(template.format(
         digit1=_get_random_digit(),
@@ -72,8 +74,10 @@ def fill_expression_template(template):
         operator5=_get_random_operator(),
     ))
 
+
 def fill_latex_file_template(expr):
     return generate_latex_template(expr)
+
 
 def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, naming_format="expr_{num:05}", updater=None,
                                  image_density=500):
@@ -187,6 +191,7 @@ def generate_pdfs_from_templates(templates, output_dir, count_for_each=10, namin
     csv_file.close()
     os.chdir(old_dir)
 
+
 def generate_single_from_template(template, output_dir, file_basename, image_density=500):
     assert output_dir, "output_dir must not be empty"
     assert file_basename, "naming_format must not be empty"
@@ -220,17 +225,20 @@ def generate_single_from_template(template, output_dir, file_basename, image_den
         file_content = fill_latex_file_template(expr)
         f.write(file_content)
 
-    subprocess.Popen(["pdflatex", tex_filename], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).wait()
+    pdf_latex_return_code = subprocess.Popen(["pdflatex", "-interaction=nonstopmode", tex_filename],
+                                             stderr=subprocess.DEVNULL,
+                                             stdout=subprocess.DEVNULL).wait()
 
     # Stage 2: converting pdfs into images
     pdf_filename = file_basename + ".pdf"
     png_filename = file_basename + ".png"
 
     image_density = str(image_density)
-    subprocess.Popen(["convert", "-density", image_density,
-                      pdf_filename, "-quality", "10", "-colorspace", "Gray",
-                      "-depth", "1", "-alpha", "remove", png_filename],
-                     stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).wait()
+    if pdf_latex_return_code == 0:
+        subprocess.Popen(["convert", "-density", image_density,
+                          pdf_filename, "-quality", "10", "-colorspace", "Gray",
+                          "-depth", "1", "-alpha", "remove", png_filename],
+                         stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL).wait()
 
     # Stage 3: finish up
     for ext in ["tex", "aux", "pdf", "log"]:
@@ -239,5 +247,8 @@ def generate_single_from_template(template, output_dir, file_basename, image_den
     os.remove("formula.tex")
 
     os.chdir(old_dir)
+
+    if pdf_latex_return_code != 0:
+        raise ValueError("could not compile the LaTeX string due to wrong formatting or syntax")
 
     return expr
