@@ -34,7 +34,10 @@ function fix_brackets(latex_input) {
 function compile_latex(latex_input) {
     latex_input = fix_brackets(latex_input);
 
-    let url = '/api/v1/compile_latex?template=' + encodeURIComponent(latex_input);
+    // Added Time to force reload on recompilation even if the template did not change
+    // we need this, because the user might want to compile again and get different result
+    // when using random variables
+    let url = '/api/v1/compile_latex?template=' + encodeURIComponent(latex_input) + '&t=' + new Date().getTime();
 
     if (!img) {
         // create the image for the first time
