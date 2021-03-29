@@ -219,5 +219,5 @@ def page_latex_compiler():
     return render_template('latex_compiler.html', template_variables=api_latex_template_variables())
 
 
-def run_server():
-    app.run(debug=True)
+def run_server(port: int):
+    app.run(debug=True, host="0.0.0.0", port=port)
