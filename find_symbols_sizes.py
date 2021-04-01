@@ -2,8 +2,8 @@
 # font size (no power or sub)
 
 from os import chdir
-from tempfile import mkdtemp
 from string import digits, ascii_letters
+from tempfile import mkdtemp
 
 from PIL import Image
 from tqdm import tqdm
@@ -12,10 +12,11 @@ from dataset_generator.generator import generate_single_from_template
 from segmenter.symbol_segmenter import segment_image_crops
 from segmenter.utils import box_size
 
+
 def get_symbol_size(expr):
     filename = "tmp_file"
 
-    _ = generate_single_from_template(expr, "." , filename)
+    _ = generate_single_from_template(expr, ".", filename)
 
     img = Image.open(filename + ".png")
     crops = segment_image_crops(img)
@@ -24,9 +25,10 @@ def get_symbol_size(expr):
 
     return box_size(crops[0])
 
+
 if __name__ == "__main__":
-    characters = list(digits + ascii_letters + "=-+")
-    characters.extend(["\\Sigma", "\\pi"])
+    characters = list(digits + ascii_letters + "=-+()[],.")
+    characters.extend(["\\Sigma", "\\pi", "\\int"])
 
     tmp_dir = mkdtemp()
     chdir(tmp_dir)
@@ -37,4 +39,3 @@ if __name__ == "__main__":
     }
 
     print(symbol_sizes_dict)
-

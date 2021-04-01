@@ -11,8 +11,8 @@ from segmenter.symbol_segmenter import segment_image
 
 
 def generate_dataset(outdir):
-    characters = list(digits + ascii_letters + "=-+")
-    characters.extend(["\\Sigma", "\\pi"])
+    characters = list(digits + ascii_letters + "=-+()[],.")
+    characters.extend(["\\Sigma", "\\pi", "\\int"])
 
     if not path.isdir(outdir):
         # try to create directory
@@ -44,7 +44,7 @@ def generate_dataset(outdir):
         plain_expr = generate_single_from_template(plain_template.format(ch),
                                                    outdir, plain_filename)
         _power_expr = generate_single_from_template(power_template.format(ch),
-                                                   outdir, power_filename)
+                                                    outdir, power_filename)
 
         csv_writer.writerow([plain_expr, plain_filename])
 

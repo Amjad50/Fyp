@@ -2,33 +2,52 @@ from segmenter.utils import box_size, box_center
 
 # default sizes of symbols
 SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 48), '4': (31, 47), '5': (28, 48),
-                         '6': (29, 48), '7': (30, 49), '8': (29, 48), '9': (29, 48), 'a': (31, 32), 'b': (26, 49),
-                         'c': (27, 32), 'd': (32, 49), 'e': (27, 32), 'f': (34, 63), 'g': (32, 45), 'h': (34, 49),
-                         'i': (18, 47), 'j': (28, 60), 'k': (31, 49), 'l': (15, 49), 'm': (56, 32), 'n': (37, 32),
+                         '6': (29, 48), '7': (30, 49),
+                         '8': (29, 48), '9': (29, 48), 'a': (31, 32), 'b': (26, 49), 'c': (27, 32), 'd': (32, 49),
+                         'e': (27, 32), 'f': (34, 63),
+                         'g': (32, 45), 'h': (34, 49), 'i': (18, 47), 'j': (28, 60), 'k': (31, 49), 'l': (15, 49),
+                         'm': (56, 32), 'n': (37, 32),
                          'o': (29, 32), 'p': (36, 44), 'q': (28, 44), 'r': (28, 32), 's': (25, 32), 't': (21, 44),
-                         'u': (35, 32), 'v': (30, 32), 'w': (46, 32), 'x': (34, 32), 'y': (32, 45), 'z': (29, 32),
-                         'A': (47, 49), 'B': (49, 47), 'C': (49, 51), 'D': (53, 47), 'E': (50, 47), 'F': (49, 47),
-                         'G': (49, 51), 'H': (58, 47), 'I': (32, 47), 'J': (39, 49), 'K': (58, 47), 'L': (41, 47),
+                         'u': (35, 32), 'v': (30, 32),
+                         'w': (46, 32), 'x': (34, 32), 'y': (32, 45), 'z': (29, 32), 'A': (47, 49), 'B': (49, 47),
+                         'C': (49, 51), 'D': (53, 47),
+                         'E': (50, 47), 'F': (49, 47), 'G': (49, 51), 'H': (58, 47), 'I': (32, 47), 'J': (39, 49),
+                         'K': (58, 47), 'L': (41, 47),
                          'M': (69, 47), 'N': (58, 47), 'O': (48, 51), 'P': (49, 47), 'Q': (48, 62), 'R': (49, 49),
-                         'S': (40, 51), 'T': (47, 47), 'U': (47, 49), 'V': (49, 49), 'W': (68, 49), 'X': (57, 47),
-                         'Y': (49, 47), 'Z': (46, 47), '=': (46, 16), '-': (42, 3), '+': (46, 46), '\\Sigma': (42, 47),
-                         '\\pi': (37, 31),
+                         'S': (40, 51), 'T': (47, 47),
+                         'U': (47, 49), 'V': (49, 49), 'W': (68, 49), 'X': (57, 47), 'Y': (49, 47), 'Z': (46, 47),
+                         '=': (46, 16), '-': (42, 3),
+                         '+': (46, 46), '(': (16, 69), ')': (16, 69), '[': (10, 69), ']': (10, 69), ',': (8, 20),
+                         '.': (7, 7),
+                         '\\Sigma': (42, 47), '\\pi': (37, 31), '\\int': (61, 153),
                          # it does not matter the size of `frac` since its not always the same
                          '\\frac': (100, 3), }
 
-HAS_BELOW_BASELINE = 'fgjpqyQ'
-BELOW_BASELINE_HEIGHT = 12
+HAS_BELOW_BASELINE_GROUPS = {'fgjpqyQ,': 12, '()[]': 15}
+
+
+def __find_baseline_extra_height(symbol):
+    for k, v in HAS_BELOW_BASELINE_GROUPS.items():
+        if symbol in k:
+            return v
+    # special special case
+    if symbol == '\\int':
+        return 57
+
+    return None
 
 
 # returns the length from the top of the symbol to get to the baseline
 def get_baseline_height(symbol_name, box):
     w, h = box_size(box)
 
-    if symbol_name in HAS_BELOW_BASELINE:
+    baseline_extra_height = __find_baseline_extra_height(symbol_name)
+
+    if baseline_extra_height is not None:
         _, default_h = SYMBOLS_DEFAULT_SIZES[symbol_name]
         height_perc = h / default_h
 
-        return h - BELOW_BASELINE_HEIGHT * height_perc
+        return h - baseline_extra_height * height_perc
     elif symbol_name == '=':
         return h * 1.5
     elif symbol_name == '-':
