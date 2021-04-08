@@ -84,6 +84,11 @@ class SymbolTreeNode:
 
             for relation_str in ['power', 'sub']:
                 assert not self.relations[relation_str], f"\\frac cannot have `{relation_str}` relation"
+        elif self.label == '\\sum':
+            if up_node := self.relations['up']:
+                result += f"^{{{up_node[0].generate_latex(optimize)}}}"
+            if down_node := self.relations['down']:
+                result += f"_{{{down_node[0].generate_latex(optimize)}}}"
         else:
             if nodes := self.relations['sub']:
                 result += f"_{{{nodes[0].generate_latex(optimize)}}}"

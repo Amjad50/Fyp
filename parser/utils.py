@@ -12,7 +12,7 @@ RELATIONS = ["left", "power", "sub", "up", "down", "none"]
 
 
 def can_symbol_have_up_down(symbol) -> bool:
-    can_have_up_down = ["\\frac", "\\Sigma", "\\int"]
+    can_have_up_down = ["\\frac", "\\sum", "\\int"]
     return symbol in can_have_up_down
 
 

@@ -19,7 +19,7 @@ SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 
                          '=': (46, 16), '-': (42, 3),
                          '+': (46, 46), '(': (16, 69), ')': (16, 69), '[': (10, 69), ']': (10, 69), ',': (8, 20),
                          '.': (7, 7),
-                         '\\Sigma': (42, 47), '\\pi': (37, 31), '\\int': (61, 153),
+                         '\\sum': (91, 97), '\\pi': (37, 31), '\\int': (61, 153),
                          # it does not matter the size of `frac` since its not always the same
                          '\\frac': (100, 3), }
 
@@ -33,6 +33,8 @@ def __find_baseline_extra_height(symbol):
     # special special case
     if symbol == '\\int':
         return 57
+    if symbol == '\\sum':
+        return 30
 
     return None
 

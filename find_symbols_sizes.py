@@ -28,7 +28,7 @@ def get_symbol_size(expr):
 
 if __name__ == "__main__":
     characters = list(digits + ascii_letters + "=-+()[],.")
-    characters.extend(["\\Sigma", "\\pi", "\\int"])
+    characters.extend(["\\sum", "\\pi", "\\int"])
 
     tmp_dir = mkdtemp()
     chdir(tmp_dir)
