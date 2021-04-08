@@ -87,6 +87,9 @@ class SymbolTree:
                     if SymbolTree.__optimize_first_parent_connection(node, relation_str):
                         changed = True
 
+        # should be called last, as it assumes only one connection is present for `left` and `power` and `sub`.
+        SymbolTree.__optimize_adjacent_powers(self.nodes)
+
     def get_root_node(self) -> 'SymbolTreeNode':
         return self.__get_root_node(self.nodes)
 
@@ -218,6 +221,10 @@ class SymbolTree:
                             f"inner connections of node {node.position} with inner node {connecting_node.position} "
                             f"relation '{relation_str}' must be one")
 
+                    # do not optimize if it will go left of the current node as it does not make sense
+                    if inner_connections[0].crop[0] < connecting_node.crop[0]:
+                        continue
+
                     node.remove_connection_with_relation(relation_str, connecting_node.position)
                     node.connect_with_relation(inner_connections[0], relation_str)
 
@@ -225,6 +232,41 @@ class SymbolTree:
                     return True
 
         return False
+
+    @staticmethod
+    def __optimize_adjacent_powers(nodes: List['SymbolTreeNode']):
+        """
+        This function will remove `left` connection that adjacent powers have but they are not connected.
+        example:
+
+            $ e^2 m^3 $
+            // here, 3 and 2 might have `left` connection since the distance between 2 and 3 is less than the distance
+            // between e and m
+
+        @param nodes: the whole tree to optimize
+        """
+        for node in nodes:
+            for relation_str in ['power', 'sub']:
+                if inner_node := node.relations[relation_str]:
+                    assert len(inner_node) == 1
+                    current_node = inner_node[0]
+                    # only one power, no lefts
+                    if not current_node.relations['left']:
+                        continue
+
+                    while True:
+                        last_node = current_node
+                        current_node = current_node.relations['left'][0]
+                        if node_to_fix := current_node.relations['power_inverse']:
+                            assert len(node_to_fix) == 1
+
+                            # connect with this power root
+                            node.connect_with_relation(node_to_fix[0], 'left')
+                            # remove connection from the two adjacent powers
+                            last_node.remove_connection_with_relation('left', current_node.position)
+
+                        if not current_node.relations['left']:
+                            break
 
     def __str__(self):
         result = ""
