@@ -13,7 +13,7 @@ from .utils import RELATIONS, optimize_latex_string
 
 class SymbolTree:
     def __init__(self, labeled_crops: LabeledCrops, all_relations: List[List[Tuple[int, float, str]]],
-                 min_tree: List[Tuple[int, int]]) -> None:
+                 min_tree: List[Tuple[int, int]], optimize: bool = True) -> None:
         self.nodes = [
             SymbolTreeNode(label, crop, i)
             for i, (label, crop) in enumerate(labeled_crops)
@@ -27,20 +27,21 @@ class SymbolTree:
         # as the tree need optimized connections to generate latex without problems, we must enforce it.
         # but the method will be kept public, as a user can change connections manually, in that case
         # they must call `optimize_connections` to keep the tree clean.
-        self.optimize_connections()
+        if optimize:
+            self.optimize_connections()
 
     @classmethod
-    def from_image(cls, img: Image, svm_model: SVMClassifier) -> 'SymbolTree':
+    def from_image(cls, img: Image, svm_model: SVMClassifier, optimize: bool = True) -> 'SymbolTree':
         labeled_crops = get_labeled_crops(img, svm_model)
 
-        return cls.from_labeled_crops(labeled_crops)
+        return cls.from_labeled_crops(labeled_crops, optimize=optimize)
 
     @classmethod
-    def from_labeled_crops(cls, labeled_crops: LabeledCrops) -> 'SymbolTree':
+    def from_labeled_crops(cls, labeled_crops: LabeledCrops, optimize: bool = True) -> 'SymbolTree':
         relations = get_all_symbols_relations_connections(labeled_crops)
         min_tree = get_minimum_spanning_tree_symbol_connections(labeled_crops)
 
-        return cls(labeled_crops, relations, min_tree)
+        return cls(labeled_crops, relations, min_tree, optimize=optimize)
 
     def add_connection(self, from_node: int, to_node: int, relation: str) -> None:
         self.nodes[from_node].connect_with_relation(self.nodes[to_node], relation)
