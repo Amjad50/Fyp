@@ -46,4 +46,4 @@ def response_image(img: Image):
     img_io = BytesIO()
     img.save(img_io, 'PNG')
     img_io.seek(0)
-    return send_file(img_io, mimetype='image/jpeg')
+    return send_file(img_io, mimetype='image/png')
