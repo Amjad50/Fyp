@@ -222,7 +222,7 @@ class SymbolTree:
                             f"relation '{relation_str}' must be one")
 
                     # do not optimize if it will go left of the current node as it does not make sense
-                    if inner_connections[0].crop[0] < connecting_node.crop[0]:
+                    if inner_connections[0].crop[0] < node.crop[0] and relation_str in ['power', 'sub']:
                         continue
 
                     node.remove_connection_with_relation(relation_str, connecting_node.position)
