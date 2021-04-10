@@ -33,10 +33,12 @@ def predict_latex(img_filename):
     img = Image.open(path.join(dataset_folder, f'{img_filename}.png'))
 
     tree = SymbolTree.from_image(img, svm_model)
-
-    tree.optimize_connections()
-
-    return tree.get_latex_string(optimize=True)
+    try:
+        tree.optimize_connections()
+        return optimize_latex_string(tree.get_latex_string(optimize=True))
+    except Exception as e:
+        print(f'file {img_filename} got error {e}')
+        return ''
 
 
 exprs = dataset.expr.map(optimize_latex_string)
