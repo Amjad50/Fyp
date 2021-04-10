@@ -8,7 +8,7 @@ from utils.types import LabeledCrops
 from .connections import get_all_symbols_relations_connections, get_minimum_spanning_tree_symbol_connections
 from .labeler import draw_connections
 from .tree_node import SymbolTreeNode
-from .utils import RELATIONS, optimize_latex_string
+from .utils import RELATIONS
 
 
 class SymbolTree:
@@ -93,17 +93,14 @@ class SymbolTree:
     def get_root_node(self) -> 'SymbolTreeNode':
         return self.__get_root_node(self.nodes)
 
-    def get_latex_string(self, optimize: bool = False) -> str:
+    def get_latex_string(self, optimize: bool = True) -> str:
         # FIXME: producing latex on unoptimized connections might result in very bad results, so maybe call optimize
         #  here? but calling optimize would change the tree, and this method should be `pure` (does not change object
         #  structure)
         leftmost_node = self.get_root_node()
 
-        latex_string = leftmost_node.generate_latex(optimize=False)
+        latex_string = leftmost_node.generate_latex(optimize=optimize)
 
-        # optimize at the end on one go is better than doing it for each node
-        if optimize:
-            return optimize_latex_string(latex_string)
         return latex_string
 
     # helper function

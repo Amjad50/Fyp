@@ -5,6 +5,14 @@ from .utils import RELATIONS, optimize_latex_string
 
 
 class SymbolTreeNode:
+    # these will be placed when a bracket should not be optimized
+    # for example `\frac{w}{a}` should not be converted to `\fracwa`, but `\frac{w}a` is fine
+    # so we try to place these where appropriate, then after all generation, they will be replaced by the correct
+    # bracket type
+    __NO_OPTIMIZE_OPEN_BRACKET = '\u1234'
+    __NO_OPTIMIZE_CLOSE_BRACKET = '\u1235'
+    __LABELS_LEFT_CANNOT_OPTIMIZE = ['\\sum', '\\int']
+
     def __init__(self, label: str, crop: Box, position: int) -> None:
         self.position: int = position
         self.label: str = label
@@ -71,7 +79,19 @@ class SymbolTreeNode:
 
         return True
 
-    def generate_latex(self, optimize: bool = False) -> str:
+    def generate_latex(self, optimize: bool = True) -> str:
+        result = self.__generate_latex(optimize=False)
+
+        # optimize in one go
+        if optimize:
+            result = optimize_latex_string(result)
+
+        result = result.replace(SymbolTreeNode.__NO_OPTIMIZE_OPEN_BRACKET, '{').replace(
+            SymbolTreeNode.__NO_OPTIMIZE_CLOSE_BRACKET, '}')
+
+        return result
+
+    def __generate_latex(self, optimize: bool = False) -> str:
         result = self.label
 
         assert self.normalized(), "some relation/s have more than one node"
@@ -80,21 +100,22 @@ class SymbolTreeNode:
             assert self.relations['up'] and self.relations['down'], "\\frac should have `up` and `down` relations"
             up_node = self.relations['up'][0]
             down_node = self.relations['down'][0]
-            result += f"{{{up_node.generate_latex(optimize)}}}{{{down_node.generate_latex(optimize)}}}"
+            result += f"{SymbolTreeNode.__NO_OPTIMIZE_OPEN_BRACKET}{up_node.__generate_latex(optimize)}" \
+                      f"{SymbolTreeNode.__NO_OPTIMIZE_CLOSE_BRACKET}{{{down_node.__generate_latex(optimize)}}}"
 
             for relation_str in ['power', 'sub']:
                 assert not self.relations[relation_str], f"\\frac cannot have `{relation_str}` relation"
         elif self.label == '\\sum':
             if up_node := self.relations['up']:
-                result += f"^{{{up_node[0].generate_latex(optimize)}}}"
+                result += f"^{{{up_node[0].__generate_latex(optimize)}}}"
             if down_node := self.relations['down']:
-                result += f"_{{{down_node[0].generate_latex(optimize)}}}"
+                result += f"_{{{down_node[0].__generate_latex(optimize)}}}"
         else:
             if nodes := self.relations['sub']:
-                result += f"_{{{nodes[0].generate_latex(optimize)}}}"
+                result += f"_{{{nodes[0].__generate_latex(optimize)}}}"
 
             if nodes := self.relations['power']:
-                result += f"^{{{nodes[0].generate_latex(optimize)}}}"
+                result += f"^{{{nodes[0].__generate_latex(optimize)}}}"
 
             for relation_str in ['up', 'down']:
                 assert not self.relations[relation_str], f"`{self.label}` cannot have `{relation_str}` relation"
@@ -102,8 +123,14 @@ class SymbolTreeNode:
         # in this case, we treat `none` as `left` because there is no other way
         # FIXME: maybe throw exception on `none`?
         for relation_str in ['left', 'none']:
+            if self.label in SymbolTreeNode.__LABELS_LEFT_CANNOT_OPTIMIZE:
+                prefix = SymbolTreeNode.__NO_OPTIMIZE_OPEN_BRACKET
+                suffix = SymbolTreeNode.__NO_OPTIMIZE_CLOSE_BRACKET
+            else:
+                prefix = ""
+                suffix = ""
             if nodes := self.relations[relation_str]:
-                result += nodes[0].generate_latex(optimize)
+                result += f'{prefix}{nodes[0].__generate_latex(optimize)}{suffix}'
 
         if optimize:
             return optimize_latex_string(result)
