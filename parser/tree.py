@@ -175,7 +175,7 @@ class SymbolTree:
             node_from = sorted_connections[i]
             node_to = sorted_connections[i + 1]
 
-            node_from.connect_with_relation(node_to, 'left')
+            SymbolTree.__connect_to_last_left_of(node_from, node_to)
 
         # it is important that we save a copy of the position, as when we remove a connection, it would also
         # modify the reference to `connections`
@@ -186,6 +186,16 @@ class SymbolTree:
         node.connect_with_relation(sorted_connections[0], relation_str)
 
         return True
+
+    @staticmethod
+    def __connect_to_last_left_of(node_from: SymbolTreeNode, node_to: SymbolTreeNode):
+        current_node = node_from
+
+        while left_nodes := current_node.relations['left']:
+            assert len(left_nodes) == 1
+            current_node = left_nodes[0]
+
+        current_node.connect_with_relation(node_to, 'left')
 
     @staticmethod
     def __optimize_first_parent_connection(node: SymbolTreeNode, relation_str: str) -> bool:
