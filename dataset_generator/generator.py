@@ -15,11 +15,11 @@ operators = "+-="
 
 
 def _get_random_num():
-    return randint(-1000, 1000)
+    return randint(-999, 999)
 
 
 def _get_random_digit():
-    return randint(0, 10)
+    return randint(0, 9)
 
 
 def _get_random_latin_letter():
