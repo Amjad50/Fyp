@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Tester{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <!-- CodeMirror main styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.css"
+          integrity="sha512-xIf9AdJauwKIVtrVRZ0i4nHP61Ogx9fSRAkCLecmE2dL/U8ioWpDvFCAy4dcfecN72HHB9+7FfQj3aiO68aaaw=="
+          crossorigin="anonymous"/>
+
+    <!-- CodeMirror Dracula theme styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/theme/dracula.min.css"
+          integrity="sha512-gFMl3u9d0xt3WR8ZeW05MWm3yZ+ZfgsBVXLSOiFz2xeVrZ8Neg0+V1kkRIo9LikyA/T9HuS91kDfc2XWse0K0A=="
+          crossorigin="anonymous"/>
+{% endblock %}
+
+{% set images_previews_data = [
+    ["Segmentation", "segmentation_img_container"],
+    ["Classification", "classification_img_container"],
+    ["Parsing", "parsing_img_container"],
+] %}
+
+{% block content %}
+    {{ super() }}
+
+    <!-- Form containing one textarea and one button, the textarea is handled by CodeMirror, and on
+         Button press or `Ctrl-Enter` press, the code will be compiled into an expression Image and displayed -->
+    <div class="container my-3">
+        <div class="row">
+            <div class="form-floating">
+                <!-- LaTeX input -->
+                <textarea class="form-control" id="latex_input_editor" rows="2" readonly
+                          style="height: 100px;"></textarea>
+                <label for="latex_input_editor">LaTeX Input</label>
+            </div>
+        </div>
+
+        <!-- Toolbar for random variables -->
+        <div class="row">
+            <div class="col text-center">
+                <div class="btn-group mt-3 mx-auto" role="toolbar">
+                    <button class="btn btn-secondary" data-bs-toggle="tooltip"
+                            title="On each compilation, the variable data will change, same variable will share the same data between all instances">
+                        Choose random variable:
+                    </button>
+                    {% for variable_name, variable_range, variable_description in template_variables['variables'] %}
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                    id="dropdownMenuLink{{ variable_name }}"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <!-- Show the tooltip using inner `data-bs-toggle` using span -->
+                                <span data-bs-toggle="tooltip"
+                                      title="{{ variable_description }}">{{ variable_name }}</span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink{{ variable_name }}">
+                                {% for i in range(variable_range[0], variable_range[1] + 1) %}
+                                    <li>
+                                        <!-- on button click, call the insert random variable function with the variable
+                                             to be inserted into the CodeMirror editor -->
+                                        <button class="dropdown-item"
+                                                onclick="insert_random_variable('{{ variable_name ~ i }}')">{{ i }}</button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Compile and predict button -->
+        <div class="row text-center my-3">
+            <div class="col">
+                <button id="compile_and_predict_button" class="btn btn-primary mb-3">Compile and predict (Ctrl-Enter)
+                </button>
+            </div>
+        </div>
+
+        <!-- The first output row, that shows a preview of the input image, it is updated on file selection,
+             i.e. before pressing submit -->
+        <div class="card row my-3">
+            <div class="card-header bg-secondary text-white">
+                Input Image
+            </div>
+            <!-- When the user uploads an image, a preview of it is shown here -->
+            <div id="input_img_preview_container" class="col text-center" style="min-height: 100px">
+            </div>
+        </div>
+
+        <!-- The second output row, shows images preview of the `segmentation`, `classification` and `parsing`
+             stages of the system. They are updated on the submit button press, as they communicate with the backend
+             and we don't want to make it call the backend on every file change if the user does not want to. -->
+        <div class="row my-3 gap-2">
+            {% for header_label, img_container_id in images_previews_data %}
+                <div class="card col p-0">
+                    <div class="card-header bg-output-result text-white">
+                        {{ header_label }}
+                    </div>
+                    <!-- When the user uploads an image, a preview of it is shown here -->
+                    <div id="{{ img_container_id }}" class="col text-center" style="min-height: 100px">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="card row my-3">
+            <div class="card-header bg-output-result text-white">
+                Predicted LaTeX
+            </div>
+            <div class="form-floating my-3 rounded-3">
+                <!-- LaTeX input -->
+                <textarea class="form-control" id="latex_output_editor"></textarea>
+                <label for="latex_output_editor">LaTeX Output</label>
+            </div>
+            <!-- Button Link that allow user to go to `latex_compiler` to see graphical result -->
+            <!-- TODO: maybe we should add a preview in this page instead? -->
+            <div class="col text-center">
+                <a href="#" target="_blank" id="compile_output_latex_button" class="btn btn-primary mb-3">Compile</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CodeMirror main script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"
+            integrity="sha512-hc0zo04EIwTzKLvp2eycDTeIUuvoGYYmFIjYx7DmfgQeZPC5N27sPG2wEQPq8d8fCTwuguLrI1ffatqxyTbHJw=="
+            crossorigin="anonymous"></script>
+    <!-- CodeMirror `LaTeX` mode support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/mode/stex/stex.min.js"
+            integrity="sha512-l+FnIuYCa5e8wQFlCV4yk2dQH74HjZJkYaiyY3udIQnAJ4w48RiPmbX1MSX70XGlyTWawj/CFgCrDTSRDA6tJw=="
+            crossorigin="anonymous"></script>
+
+    <!-- The script and logic for this page -->
+    <script src="{{ url_for('static', filename='js/tester.js') }}"></script>
+{% endblock %}
