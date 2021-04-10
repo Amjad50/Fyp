@@ -1,15 +1,17 @@
 function fix_brackets(latex_input) {
+    latex_input =  latex_input.replace(/{{([^{}]*)}}/g, "\u1234$1\u1235");
+
     let output = "";
-    let just_encountered_bracket = null;
     for (let c of latex_input) {
-        output += c;
-        // add a duplicate bracket only if its a bracket and its the first one, meaning that 2 brackets will only become
-        // 3 and not 4, meaning that we only add 1 for each group of brackets
-        if ((c === '}' || c === '{') && just_encountered_bracket !== c) {
+        if (c === '\u1234')
+            output += '{{{'
+        else if (c === '\u1235')
+            output += '}}}'
+        else
             output += c;
-            just_encountered_bracket = c;
-        } else {
-            just_encountered_bracket = null;
+
+        if ((c === '}' || c === '{') ) {
+            output += c;
         }
     }
 
