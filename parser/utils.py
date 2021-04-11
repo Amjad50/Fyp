@@ -3,17 +3,32 @@ from typing import Optional
 
 import numpy as np
 
-from segmenter.utils import box_center
+from segmenter.utils import box_center, box_size
 from symbols_utils.symbol_size import get_baseline_center, percentage_of_default_size
 from utils.geometry import angle_between_points, distance_between_points
-from utils.types import LabelCrop
+from utils.types import LabelCrop, Box
 
 RELATIONS = ["left", "power", "sub", "up", "down", "none"]
 
 
-def can_symbol_have_up_down(symbol) -> bool:
+def can_symbol_have_up_down(symbol: str) -> bool:
     can_have_up_down = ["\\frac", "\\sum", "\\int"]
     return symbol in can_have_up_down
+
+
+def can_be_power_or_sub(box1: Box, box2: Box) -> bool:
+    w1, h1 = box_size(box1)
+    left1, top1, right1, down1 = box1
+    left2, top2, right2, down2 = box2
+
+    # power possibility
+    if top1 > top2:
+        if top1 - h1 > top2:
+            return False
+    else:
+        if down1 + h1 < top2:
+            return False
+    return True
 
 
 def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -> Optional[str]:
@@ -51,9 +66,9 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
         angle = angle_between_points(center1, center2)
 
     if perc_perc < 0.85:
-        if -8 >= angle >= -30 and label1 != '\\frac':
+        if -8 >= angle >= -30 and label1 != '\\frac' and can_be_power_or_sub(box1, box2):
             return 'sub'
-        elif 15 <= angle <= 60 and label1 != '\\frac':
+        elif 15 <= angle <= 60 and label1 != '\\frac' and can_be_power_or_sub(box1, box2):
             return 'power'
 
     if abs(perc_perc - 1) > 0.15 and label1 != '\\frac' and label2 != '\\frac':
@@ -61,9 +76,9 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
         if 15 >= angle >= -30:
             return 'none'
 
-    if -12 >= angle >= -30 and label1 != '-':
+    if -12 >= angle >= -30 and label1 != '-' and can_be_power_or_sub(box1, box2):
         return 'sub'
-    elif 25 <= angle <= 60 and label1 != '-':
+    elif 25 <= angle <= 60 and label1 != '-' and can_be_power_or_sub(box1, box2):
         return 'power'
     elif -10 <= angle <= 10:
         return 'left'
