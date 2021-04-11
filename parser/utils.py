@@ -62,6 +62,11 @@ def get_most_probable_relation(label_crop1: LabelCrop, label_crop2: LabelCrop) -
         else:
             return 'down'
 
+    # this is a case where the top/down is a bit outside the boundary of the \frac element
+    # which results in having `power/sub` connection which is not true
+    if left2 < right1 < right2 and can_symbol_have_up_down(label2):
+        return None
+
     if label1 == '\\frac' or label2 == '\\frac':
         angle = angle_between_points(center1, center2)
 
