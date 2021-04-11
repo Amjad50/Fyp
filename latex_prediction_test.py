@@ -20,7 +20,6 @@ args = parser.parse_args()
 dataset_folder = args.dataset
 
 dataset = pd.read_csv(path.join(dataset_folder, 'metadata.csv'))
-dataset.head()
 
 svm_model = SVMClassifier()
 svm_model.import_from_pickle(args.model)
@@ -48,6 +47,11 @@ predicted_exprs = dataset.file_basename.map(predict_latex)
 end_prediction_time = time.process_time_ns()
 
 prediction_progress.close()
+
+mask = predicted_exprs != exprs
+pd.set_option("max_rows", None)
+print('wrong classifications')
+print(pd.DataFrame({'predicted': predicted_exprs[mask], 'original': exprs[mask]}))
 
 time_took = (end_prediction_time - start_prediction_time) / 1e9
 score = accuracy_score(exprs, predicted_exprs)
