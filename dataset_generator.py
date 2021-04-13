@@ -12,7 +12,11 @@ def command_line_generation(out_dir, count_for_each):
         "\\frac{{{num1}{latin1}}}{{{num2}}}",
         "{latin1}_{latin2} =\\frac{{{latin4}^{{{digit1}}}}}{{{latin3}}}",
         "{latin1}({latin2}) = \\sum^{{{digit2}}}_{{{latin2}={{0}}}}{{{latin2}^{digit1}+\\frac{{{latin2}}}{{{latin2} + {num2}}}}}",
-        "e^{{{num1}}}+\\frac{{{latin1}^{digit1}+{latin2}^{digit2}}}{{{latin3}+{latin4}^{latin5}}}"
+        "e^{{{num1}}}+\\frac{{{latin1}^{digit1}+{latin2}^{digit2}}}{{{latin3}+{latin4}^{latin5}}}",
+        "\\frac{{dy}}{{dx}}({num1}x) = {num1}",
+        "E({latin1}) = {latin1}^{{-1}}\\sum^{latin1}_{{{latin2}=0}}{{(y^{{({latin2})}} - y)^2}}",
+        "{num1}.{pos1}",
+
     ]
 
     progress = tqdm()
