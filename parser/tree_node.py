@@ -110,6 +110,16 @@ class SymbolTreeNode:
                 result += f"^{{{up_node[0].__generate_latex(optimize)}}}"
             if down_node := self.relations['down']:
                 result += f"_{{{down_node[0].__generate_latex(optimize)}}}"
+        elif self.label == '\\int':
+            up_and_power = self.relations['up'] + self.relations['power']
+            down_and_sub = self.relations['down'] + self.relations['sub']
+
+            if up_and_power:
+                assert len(up_and_power) == 1, "Integral cannot have two up connections"
+                result += f"^{{{up_and_power[0].__generate_latex(optimize)}}}"
+            if down_and_sub:
+                assert len(down_and_sub) == 1, "Integral cannot have two down connections"
+                result += f"_{{{down_and_sub[0].__generate_latex(optimize)}}}"
         else:
             if nodes := self.relations['sub']:
                 result += f"_{{{nodes[0].__generate_latex(optimize)}}}"
