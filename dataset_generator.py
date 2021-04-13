@@ -16,7 +16,7 @@ def command_line_generation(out_dir, count_for_each):
         "\\frac{{dy}}{{dx}}({num1}x) = {num1}",
         "E({latin1}) = {latin1}^{{-1}}\\sum^{latin1}_{{{latin2}=0}}{{(y^{{({latin2})}} - y)^2}}",
         "{num1}.{pos1}",
-
+        "\\int^{{{num1}\\pi}}_{{{num2}\\pi}}{{x^{{{num4}}}dx}}",
     ]
 
     progress = tqdm()
