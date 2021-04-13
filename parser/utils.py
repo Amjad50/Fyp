@@ -18,13 +18,14 @@ def can_symbol_have_up_down(symbol: str) -> bool:
 
 def can_be_power_or_sub(box1: Box, box2: Box) -> bool:
     w1, h1 = box_size(box1)
+    w2, h2 = box_size(box2)
     left1, top1, right1, down1 = box1
     left2, top2, right2, down2 = box2
 
     assert left1 < left2, "box1 must be to the left of box2"
 
     # must not be too far to the left
-    if right1 + w1 < left2:
+    if right1 + min(w1, w2) < left2:
         return False
 
     # power possibility
