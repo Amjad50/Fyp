@@ -79,11 +79,6 @@ def __is_frac(frac_crop: Box, crops: List[Box]) -> bool:
             elif other_down < top and not __other_vertically_between(other_crop, frac_crop, crops):
                 top_found = True
 
-    # one of them is true but not the other
-    if top_found ^ down_found:
-        raise Exception("WHAT? somehow there is an element on top/down of frac but not the other side\n"
-                        f"frac crop is {frac_crop}")
-
     return top_found and down_found
 
 
