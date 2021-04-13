@@ -11,7 +11,7 @@ class SymbolTreeNode:
     # bracket type
     __NO_OPTIMIZE_OPEN_BRACKET = '\u1234'
     __NO_OPTIMIZE_CLOSE_BRACKET = '\u1235'
-    __LABELS_LEFT_CANNOT_OPTIMIZE = ['\\sum', '\\int']
+    __LABELS_LEFT_CANNOT_OPTIMIZE = ['\\sum', '\\int', '\\pi']
 
     def __init__(self, label: str, crop: Box, position: int) -> None:
         self.position: int = position
