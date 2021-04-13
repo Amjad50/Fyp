@@ -18,6 +18,14 @@ def _get_random_num():
     return randint(-999, 999)
 
 
+def _get_random_pos():
+    return randint(1, 999)
+
+
+def _get_random_neg():
+    return randint(-999, -1)
+
+
 def _get_random_digit():
     return randint(0, 9)
 
@@ -62,6 +70,16 @@ def fill_expression_template(template):
         num3=_get_random_num(),
         num4=_get_random_num(),
         num5=_get_random_num(),
+        pos1=_get_random_pos(),
+        pos2=_get_random_pos(),
+        pos3=_get_random_pos(),
+        pos4=_get_random_pos(),
+        pos5=_get_random_pos(),
+        neg1=_get_random_neg(),
+        neg2=_get_random_neg(),
+        neg3=_get_random_neg(),
+        neg4=_get_random_neg(),
+        neg5=_get_random_neg(),
         latin1=_get_random_latin_letter(),
         latin2=_get_random_latin_letter(),
         latin3=_get_random_latin_letter(),

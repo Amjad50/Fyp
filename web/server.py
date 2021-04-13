@@ -202,7 +202,9 @@ def api_latex_template_variables():
     return {
         'variables': [
             ["digit", [1, 5], "A single digit"],
-            ["num", [1, 5], "A number from -1000 to 1000"],
+            ["num", [1, 5], "A number from -999 to 999"],
+            ["pos", [1, 5], "A number from 1 to 999"],
+            ["neg", [1, 5], "A number from -999 to -1"],
             ["latin", [1, 5], "A single ascii (upper/lower)case letter"],
             ["operator", [1, 5], "A single operator character from ['+', '-', '=']"],
         ]
