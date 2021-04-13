@@ -21,6 +21,12 @@ def can_be_power_or_sub(box1: Box, box2: Box) -> bool:
     left1, top1, right1, down1 = box1
     left2, top2, right2, down2 = box2
 
+    assert left1 < left2, "box1 must be to the left of box2"
+
+    # must not be too far to the left
+    if right1 + w1 < left2:
+        return False
+
     # power possibility
     if top1 > top2:
         if top1 - h1 > top2:
