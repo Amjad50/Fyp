@@ -40,8 +40,15 @@ def normalize_image(img_array):
 
     w, h = cropped_img.size
     resize_ratio = min(128 / w, 128 / h)
+    new_size = [int(resize_ratio * w), int(resize_ratio * h)]
 
-    resized_img = cropped_img.resize((int(resize_ratio * w), int(resize_ratio * h)))
+    # sometimes, the frac will have 0 height, because of resize, so make sure to at least leave one pixel
+    if new_size[0] == 0:
+        new_size[0] = 1
+    if new_size[1] == 0:
+        new_size[1] = 1
+
+    resized_img = cropped_img.resize(new_size)
 
     gray_img = resized_img.convert('L')
     inverted_gray_image = ImageOps.invert(gray_img)
