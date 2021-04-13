@@ -25,6 +25,18 @@ def merge_boxes(box1, box2):
     return left, top, right, down
 
 
+def get_border_lines(box):
+    left, top, right, down = box
+
+    lines = [((0, 0), (0, 0))] * 4
+    lines[0] = ((left, down), (left, top))
+    lines[1] = ((left, top), (right, top))
+    lines[2] = ((right, top), (right, down))
+    lines[3] = ((right, down), (left, down))
+
+    return lines
+
+
 def is_another_in_between(box1, box2, boxes):
     box1_center = box_center(box1)
     box2_center = box_center(box2)
@@ -36,13 +48,11 @@ def is_another_in_between(box1, box2, boxes):
         if box == box1 or box == box2:
             continue
 
-        left, top, right, down = box
+        # if its covered, then ignore this
+        if is_center_inside(box1, box) or is_center_inside(box2, box) >= 0.7:
+            continue
 
-        lines = [((0, 0), (0, 0))] * 4
-        lines[0] = ((left, down), (left, top))
-        lines[1] = ((left, top), (right, top))
-        lines[2] = ((right, top), (right, down))
-        lines[3] = ((right, down), (left, down))
+        lines = get_border_lines(box)
 
         # we check if an edge (bounding-rect) of any symbol intersects with the
         # line between the two symbols we are interested in
@@ -51,3 +61,40 @@ def is_another_in_between(box1, box2, boxes):
                 return True
 
     return False
+
+
+def box_overlap_percentage(box1, box2) -> float:
+    l1, t1, r1, d1 = box1
+    l2, t2, r2, d2 = box2
+
+    w2, h2 = box_size(box2)
+
+    overlap_area = max(0, min(r1, r2) - max(l1, l2)) * max(0, min(d1, d2) - max(t1, t2))
+    area2 = w2 * h2
+
+    return overlap_area / area2
+
+
+def is_center_inside(box, box_to_be_inside_of) -> bool:
+    # must be overlapped
+    if box_overlap_percentage(box_to_be_inside_of, box) == 0:
+        return False
+
+    lines = get_border_lines(box_to_be_inside_of)
+    l1, t1, r1, d1 = box
+    l2, t2, r2, d2 = box_to_be_inside_of
+
+    l = min(l1, l2)
+    t = min(t1, t2)
+    r = max(r1, r2)
+    d = max(d1, d2)
+
+    c_x, c_y = box_center(box)
+
+    top_bottom_line = ((c_x, t - 1), (c_x, d + 1))
+    left_right_line = ((l - 1, c_y), (r + 1, c_y))
+
+    box_from_center_lines = [left_right_line, top_bottom_line] * 2
+
+    # make sure it intersects with all directions
+    return all(map(lambda x: get_line_intersection(x[0], x[1]), zip(lines, box_from_center_lines)))
