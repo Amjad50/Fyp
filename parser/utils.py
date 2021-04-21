@@ -30,8 +30,9 @@ def can_be_power_or_sub(box1: Box, box2: Box) -> bool:
 
     # power possibility
     if top1 > top2:
-        if top1 - h1 > top2:
+        if top1 - h1 > down2:
             return False
+    # sub possibility
     else:
         if down1 + h1 < top2:
             return False
