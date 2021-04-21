@@ -101,10 +101,7 @@ def get_labeled_crops(img, svm_model: SVMClassifier) -> LabeledCrops:
     crops_images = segment_image(img)
     crops, cropped_images = list(zip(*crops_images))
 
-    predicted_labels: List[str] = []
-
-    for crop, cropped_img in crops_images:
-        predicted_labels.append(svm_model.predict_label(cropped_img))
+    predicted_labels: List[str] = svm_model.predict_labels(cropped_images)
 
     labeled_crops = __sort_labeled_crops(list(zip(predicted_labels, crops)))
 

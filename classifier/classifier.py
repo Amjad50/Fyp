@@ -1,4 +1,5 @@
 import pickle
+from typing import List
 
 from PIL import Image
 
@@ -33,3 +34,9 @@ class SVMClassifier:
             raise Exception('There is no model, train a new model or import one from pickle')
         features = extract_hog_features(img)
         return self.model.predict([features])[0]
+
+    def predict_labels(self, imgs: List['Image']) -> List[str]:
+        if not self.model:
+            raise Exception('There is no model, train a new model or import one from pickle')
+        imgs_features = [extract_hog_features(img) for img in imgs]
+        return self.model.predict(imgs_features)
