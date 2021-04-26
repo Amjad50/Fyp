@@ -1,11 +1,12 @@
 import numpy as np
 
+from utils.image import img_to_binary
 from .utils import box_size
 
 
 def black_ratio(box, img):
     # img must be in binary format ("1"), so we convert to make sure
-    img_arr = np.asarray(img.convert("1").crop(box))
+    img_arr = np.asarray(img_to_binary(img).crop(box))
     w, h = img_arr.shape
     full_size = w * h
     white_count = img_arr.sum()

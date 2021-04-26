@@ -3,11 +3,12 @@ from PIL import Image, ImageOps
 from skimage.feature import hog
 
 from segmenter.symbol_segmenter import segment_image
+from utils.image import img_to_binary
 
 
 # convert to a size similar across all images
 def normalize_image(img_array):
-    img = Image.fromarray(img_array).convert('1')
+    img = img_to_binary(Image.fromarray(img_array))
 
     crops_images = segment_image(img)
     crops, cropped_images = list(zip(*crops_images))

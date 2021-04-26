@@ -12,6 +12,7 @@ from dataset_generator.generator import generate_single_from_template
 from parser.tree import SymbolTree
 from segmenter.labeler import draw_crops_rects
 from segmenter.symbol_segmenter import segment_image_crops
+from utils.image import img_to_binary
 from .utils import json_arguments, response_image
 
 app = Flask(__name__)
@@ -34,7 +35,7 @@ def api_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     crops = segment_image_crops(img)
 
@@ -49,7 +50,7 @@ def api_draw_image_segments(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     output_img = draw_crops_rects(img)
 
@@ -62,7 +63,7 @@ def api_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     labeled_crops = get_labeled_crops(img, svm_model)
 
@@ -77,7 +78,7 @@ def api_draw_labeled_crops(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     labeled_crops = get_labeled_crops(img, svm_model)
     labels, crops = list(zip(*labeled_crops))
@@ -99,7 +100,7 @@ def api_symbol_tree(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     tree = SymbolTree.from_image(img, svm_model)
     tree_nodes_data = []
@@ -131,7 +132,7 @@ def api_draw_symbol_tree(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     labeled_crops = get_labeled_crops(img, svm_model)
     labels, crops = list(zip(*labeled_crops))
@@ -159,7 +160,7 @@ def api_predict_latex(json_data):
     image_raw = b64decode(json_data['image'])
     image_bytes_io = BytesIO(image_raw)
 
-    img = Image.open(image_bytes_io).convert('1')
+    img = img_to_binary(Image.open(image_bytes_io))
 
     tree = SymbolTree.from_image(img, svm_model)
 
