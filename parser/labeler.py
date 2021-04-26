@@ -10,7 +10,7 @@ from segmenter.utils import box_center
 from utils.types import Box
 
 
-def draw_connections(img: Image, crops: List[Box], connections: List[Tuple[int, int]]) -> Image:
+def draw_connections(img: Image, crops: List[Box], connections: List[Tuple[int, int]], width: int = 3) -> Image:
     labeled_img = img.copy().convert('RGB')
     img_d = ImageDraw.Draw(labeled_img)
 
@@ -21,7 +21,7 @@ def draw_connections(img: Image, crops: List[Box], connections: List[Tuple[int, 
         c1 = box_center(crop1)
         c2 = box_center(crop2)
 
-        img_d.line([c1, c2], fill=(255, 100, 100))
+        img_d.line([c1, c2], width=width, fill=(255, 100, 100))
 
     return labeled_img
 
