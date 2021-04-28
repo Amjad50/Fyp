@@ -18,8 +18,8 @@ class SVMClassifier:
     def import_from_pickle(self, svm_pickle_filename):
         assert svm_pickle_filename, "svm_pickle_filename must not be None"
 
-        svm_pickle_file = open(svm_pickle_filename, 'rb')
-        self.model = pickle.load(svm_pickle_file)
+        with open(svm_pickle_filename, 'rb') as svm_pickle_file:
+            self.model = pickle.load(svm_pickle_file)
 
     def train_new_model(self, classification_dataset_dir, augmentation_count=10):
         model, score = train_svm_model(classification_dataset_dir,
