@@ -260,7 +260,9 @@ def generate_single_from_template(template, output_dir, file_basename, image_den
 
     # Stage 3: finish up
     for ext in ["tex", "aux", "pdf", "log"]:
-        os.remove(f"{file_basename}.{ext}")
+        file = f"{file_basename}.{ext}"
+        if os.path.exists(file):
+            os.remove(file)
 
     os.remove("formula.tex")
 
