@@ -182,11 +182,11 @@ def api_compile_latex():
         generate_single_from_template(template, generation_temp_folder, path.basename(img_filename))
     # here `ValueError` is meant to only catch the formatting error that may happen due to wrong template from the user
     except ValueError as e:
-        abort(400, f"Error in formatting: {e}, try use double curly brackets, extra: {e}")
+        abort(400, f"Error in formatting: ValueError: {e}, try use double curly brackets, extra: {e}")
     except KeyError as e:
-        abort(400, f"Error in formatting: {e}, try use double curly brackets, extra: {e}")
+        abort(400, f"Error in formatting: KeyError: {e}, key not found.")
     except IndexError as e:
-        abort(400, f"Error in formatting: {e}, try use double curly brackets, extra: {e}")
+        abort(400, f"Error in formatting: IndexError: {e}, try use double curly brackets, extra: {e}")
 
     img = Image.open(img_filename + ".png")
 
