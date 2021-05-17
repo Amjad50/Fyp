@@ -24,6 +24,12 @@ function compile_latex(latex_input) {
         // create the image for the first time
         img = $('<img src="" alt="LaTeX compiled image display"/>');
         $('#latex_output_container').append(img);
+        img.ajaxError(e => {
+            report_error(`error in compiling LaTeX due to wrong format or mistyped variable: ${e}`)
+        });
+        img.on('error', e => {
+            report_error('error in compiling LaTeX due to wrong format or mistyped variable.')
+        });
     }
     img.attr('src', url);
 }

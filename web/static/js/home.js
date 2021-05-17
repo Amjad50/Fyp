@@ -21,7 +21,8 @@ function add_input_image_change_handler() {
 
 
             if (!input_img_preview) {
-                input_img_preview = $('<img src="" class="image-in-card my-2" alt="Mathematical expression input image preview"/>');
+                // onerror="report_error(\'error in loading preview image, check the image type\')"
+                input_img_preview = $('<img src="" class="image-in-card my-2"  alt="Mathematical expression input image preview"/>');
                 $('#input_img_preview_container').append(input_img_preview);
             }
 
@@ -47,6 +48,7 @@ function predict_latex_and_update_output_preview(img_base64) {
         compile_url += `?template=${encodeURIComponent(data['latex'])}`;
         $("#compile_output_latex_button").attr('href', compile_url);
     }).fail(function (ajax_obj, textStatus, errorThrown) {
+        report_error(`latex prediction: ${errorThrown}`);
         console.error(`predict_latex request failed`, textStatus, errorThrown)
     })
 }
@@ -69,14 +71,23 @@ function run_prediction_for_image() {
     if (!segmentation_img) {
         segmentation_img = $('<img src="" class="image-in-card my-2" alt="Segmentation of the input image"/>');
         $('#segmentation_img_container').append(segmentation_img);
+        segmentation_img.on('error', e => {
+            report_error('Could not segment the image due to the file not being and image or too many segments identified');
+        });
     }
     if (!classification_img) {
         classification_img = $('<img src="" class="image-in-card my-2" alt="Classification of symbols in the input image"/>');
         $('#classification_img_container').append(classification_img);
+        classification_img.on('error', e => {
+            report_error('Could not classify the symbols due to problem in segmentation');
+        });
     }
     if (!parsing_img) {
         parsing_img = $('<img src="" class="image-in-card my-2" alt="Parsing tree connections between symbols in the input image"/>');
         $('#parsing_img_container').append(parsing_img);
+        parsing_img.on('error', e => {
+            report_error('Could not parse the structure due to problems with previous steps or wrong mathematical structure');
+        });
     }
 
     // in each step, we would call the API in the first index and assign the result to the image in the second index
@@ -98,16 +109,17 @@ function run_prediction_for_image() {
             data: JSON.stringify({image: img_base64}),
             xhr: () => { // Seems like the only way to get access to the xhr object and change its type to blob
                 let xhr = new XMLHttpRequest();
-                xhr.responseType= 'blob'
+                xhr.responseType = 'blob'
                 return xhr;
             },
         }).done(function (data) {
             let reader = new FileReader();
-            reader.onload = function(event){
+            reader.onload = function (event) {
                 img_obj.attr('src', event.target.result);
             };
             reader.readAsDataURL(data);
         }).fail(function (ajax_obj, textStatus, errorThrown) {
+            report_error(`${api_call} request failed: ${errorThrown}`);
             console.error(`${api_call} request failed`, textStatus, errorThrown)
         })
     }

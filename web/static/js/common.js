@@ -1,5 +1,5 @@
 function fix_brackets(latex_input) {
-    latex_input =  latex_input.replace(/{{([^{}]*)}}/g, "\u1234$1\u1235");
+    latex_input = latex_input.replace(/{{([^{}]*)}}/g, "\u1234$1\u1235");
 
     let output = "";
     for (let c of latex_input) {
@@ -10,7 +10,7 @@ function fix_brackets(latex_input) {
         else
             output += c;
 
-        if ((c === '}' || c === '{') ) {
+        if ((c === '}' || c === '{')) {
             output += c;
         }
     }
@@ -27,5 +27,32 @@ function img_to_base64(img) {
     const dataURL = canvas.toDataURL("image/png");
 
     return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+}
+
+function report_error(err) {
+    let new_toast = $(`
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+       <div class="toast-header bg-danger text-white">
+         <strong class="me-auto">LaTeX Predictor Error</strong>
+       </div>
+       <div class="toast-body">
+         ${err}
+       </div>
+     </div>
+    `);
+    const FULL_TIME = 1000;
+    const STEPS = 20;
+    setTimeout(() => {
+        let op = 1;
+        setInterval((n) => {
+            new_toast.css('opacity', op);
+            op -= 1 / STEPS;
+            if (op === 0.0) {
+                new_toast.remove();
+            }
+        }, FULL_TIME / STEPS)
+    }, 3000);
+
+    $('#toast_container').append(new_toast);
 }
 

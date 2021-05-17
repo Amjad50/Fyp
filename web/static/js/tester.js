@@ -88,6 +88,9 @@ function compile_latex(latex_input) {
         input_img_preview = $('<img src="" alt="LaTeX compiled image display"/>');
         $('#input_img_preview_container').append(input_img_preview);
 
+        input_img_preview.on('error', e => {
+            report_error('error in compiling LaTeX due to wrong format or mistyped variable.')
+        });
         input_img_preview.on('load', () => run_prediction_for_image());
     }
     input_img_preview.attr('src', url);
@@ -139,6 +142,7 @@ function run_prediction_for_image() {
             };
             reader.readAsDataURL(data);
         }).fail(function (ajax_obj, textStatus, errorThrown) {
+            report_error(`${api_call} request failed: ${errorThrown}`);
             console.error(`${api_call} request failed`, textStatus, errorThrown)
         })
     }
@@ -159,6 +163,7 @@ function predict_latex_and_update_output_editor(img_base64) {
         compile_url += `?template=${encodeURIComponent(data['latex'])}`;
         $("#compile_output_latex_button").attr('href', compile_url);
     }).fail(function (ajax_obj, textStatus, errorThrown) {
+        report_error(`latex prediction: ${errorThrown}`);
         console.error(`predict_latex request failed`, textStatus, errorThrown)
     })
 }
