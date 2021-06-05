@@ -18,12 +18,12 @@ SYMBOLS_DEFAULT_SIZES = {'0': (29, 48), '1': (23, 46), '2': (28, 46), '3': (29, 
                          'U': (47, 49), 'V': (49, 49), 'W': (68, 49), 'X': (57, 47), 'Y': (49, 47), 'Z': (46, 47),
                          '=': (46, 16), '-': (42, 3),
                          '+': (46, 46), '(': (16, 69), ')': (16, 69), '[': (10, 69), ']': (10, 69), ',': (8, 20),
-                         '.': (7, 7),
+                         '.': (7, 7), '|': (5, 69),
                          '\\sum': (91, 97), '\\pi': (37, 31), '\\int': (61, 153),
                          # it does not matter the size of `frac` since its not always the same
                          '\\frac': (100, 3), }
 
-HAS_BELOW_BASELINE_GROUPS = {'fgjpqyQ,': 12, '()[]': 15}
+HAS_BELOW_BASELINE_GROUPS = {'fgjpqyQ,': 12, '()[]|': 15}
 
 
 def __find_baseline_extra_height(symbol):

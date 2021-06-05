@@ -11,7 +11,7 @@ from segmenter.symbol_segmenter import segment_image
 
 
 def generate_dataset(outdir):
-    characters = list(digits + ascii_letters + "=-+()[],.")
+    characters = list(digits + ascii_letters + "=-+()[],.|")
     characters.extend(["\\sum", "\\pi", "\\int"])
 
     if not path.isdir(outdir):

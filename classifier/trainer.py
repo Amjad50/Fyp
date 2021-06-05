@@ -18,7 +18,7 @@ def generate_image_augmentation(image, count):
     transform = albumentations.Compose([
         albumentations.RandomScale(),
         albumentations.Rotate(limit=(-15, 15)),
-        albumentations.Blur(),
+        albumentations.Blur(blur_limit=5),
     ])
 
     return [transform(image=image)['image'] for _ in range(count)]
@@ -102,7 +102,7 @@ def generate_features_dataset(classification_dataset_dir, augmentation_cont, pro
     def normalize_image(img_array):
         if progress:
             tqdm_preprocessing.update(1)
-        img = img_to_binary(Image.fromarray(img_array))
+        img = img_to_binary(Image.fromarray(img_array), min_value=150)
 
         crops_images = segment_image(img)
         crops, cropped_images = list(zip(*crops_images))
