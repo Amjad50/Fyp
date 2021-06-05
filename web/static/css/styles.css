@@ -12,3 +12,11 @@
 .bg-output-result {
     background-color: #4791ff !important;
 }
+
+.header1 {
+    margin: 40px auto 32px;
+}
+
+.documentation {
+    text-align: justify;
+}

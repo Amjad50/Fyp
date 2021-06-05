@@ -227,5 +227,10 @@ def page_tester():
     return render_template('tester.html', template_variables=api_latex_template_variables())
 
 
+@app.route('/documentation')
+def page_documentation():
+    return render_template('documentation.html', template_variables=api_latex_template_variables())
+
+
 def run_server(port: int):
     app.run(debug=True, host="0.0.0.0", port=port)

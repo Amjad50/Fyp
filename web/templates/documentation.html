@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentation{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+    <div class="container col-6 documentation">
+        <h1 class="header1">Pages</h1>
+        <h3>Predictor (Home)</h3>
+        <div>
+            <p>This page hosts only the LaTeX predictor system, which is the essence of this project.</p>
+            <p>This system allows takes an input image from the user, then it will display the <b>Segmentation</b>,
+                <b>Classification</b> and <b>Parsing</b> steps, and then finally it will output the result of the
+                <b>Parsing</b>
+                step in <b>LaTeX</b> form.
+            </p>
+            <p>The result <b>LaTeX</b> can be forwarded then to the <b>Compiler</b> to check if the prediction was
+                correct or not.</p>
+        </div>
+        <h3>Compiler</h3>
+        <div>
+            <p>This page takes input in <b>LaTeX</b> form and compile it into an image.</p>
+            <p>This can be helpful for compiling images to test the predictor and for checking the accuracy of the
+                predictor manually.</p>
+            <p>Extra features included in this page:</p>
+            <ul>
+                <li>Ability to save the LaTeX argument in the <b>URL</b>, which makes it possible to share the link to
+                    other people. For example, try <a
+                            href="/latex_compiler?template=%5Cfrac%7B1%7D%7B2%7D+%2B+x">this</a> to see the compilation
+                    of (1/2 + x).
+                </li>
+                <li>The use of <b>Random variables</b> (see below).</li>
+            </ul>
+        </div>
+        <h3>Tester</h3>
+        <div>
+            <p>Using the <b>Compiler page</b> and <b>Predictor page</b> for testing can be a bit tedious, we need to
+                compile the images, and then put them manually in the <b>Predictor page</b> to test the predictor.</p>
+            <p>For that case, we made the <b>Tester page</b>, which merges these two pages together. This page receive
+                <b>LaTeX</b> input, compile it, feed it through the predictor, and give us the results back in
+                <b>LaTeX</b> form. It also displays the <b>Segmentation</b>, <b>Classification</b> and <b>Parsing</b>
+                steps similar to the <b>Predictor page</b>.</p>
+            <p>This page also have the same extra features as the <b>Compiler page</b>.</p>
+        </div>
+        <h1 class="header1">Extra Features</h1>
+        <h3>Random variables</h3>
+        <div>
+            <p>These are variables that can be put in the <b>LaTeX</b> input in the <b>Compiler page</b> or <b>Tester
+                page</b> to produce different result on each compilation attempt.</p>
+            <p>These random variables are originally used by the backend for automatic dataset generation, which is used
+                for system testing, but we used the API in the front-end here to let users test it.</p>
+            <p>An example of using the random variables is "<code>1 + {{ "{{num1}}" }}</code>". This example will be
+                compiled to <code>1 + </code> a random number, this random number is in range of <code>-999</code> to
+                <code>999</code>. So we might get the result of <code>1 + 876</code> for example.</p>
+            <p>The user can use up to 5 variables for each variable type <b>(from 1 to 5)</b>, and the same variable
+                will share the content
+                in every occurrence. For example "<code>{{ "{{num1}} + {{num1}}" }}</code>" will generate random numbers
+                for <code>num1</code>, but it will be the same in both occurrences, for example it might result in
+                <code>124 + 124</code> or <code>777 + 777</code>.</p>
+            <p>
+                <a href="/tester?template=%7B%7Blatin1%7D%7D_%7B%7Blatin2%7D%7D+%3D%5Cfrac%7B%7B%7B%7Blatin4%7D%7D%5E%7B%7B%7Bdigit1%7D%7D%7D%7D%7D%7B%7B%7Blatin2%7D%7D%7D">Here</a>
+                an example used in system testing that uses multiple variables</p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Variable name</th>
+                    <th scope="col">Variable description</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for variable_name, variable_range, variable_description in template_variables['variables'] %}
+                    <tr>
+                        <th scope="row">{{ variable_name }}</th>
+                        <td>{{ variable_description }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
