@@ -29,14 +29,27 @@ function img_to_base64(img) {
     return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
-function report_error(err) {
+function report_error(err_msg_prefix, err) {
+    console.error('report_error', err_msg_prefix, err);
+    let error_msg = ''
+    if (err) {
+        try {
+            let err_json = JSON.parse(err)
+
+            if (err_json['error']) {
+                error_msg = err_json['error'];
+            }
+        } catch (e) {
+        }
+    }
+    error_msg = err_msg_prefix + ' ' + error_msg;
     let new_toast = $(`
     <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
        <div class="toast-header bg-danger text-white">
          <strong class="me-auto">LaTeX Predictor Error</strong>
        </div>
        <div class="toast-body">
-         ${err}
+         ${error_msg}
        </div>
      </div>
     `);

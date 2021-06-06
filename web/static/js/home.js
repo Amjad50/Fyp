@@ -48,8 +48,7 @@ function predict_latex_and_update_output_preview(img_base64) {
         compile_url += `?template=${encodeURIComponent(data['latex'])}`;
         $("#compile_output_latex_button").attr('href', compile_url);
     }).fail(function (ajax_obj, textStatus, errorThrown) {
-        report_error(`latex prediction: ${errorThrown}`);
-        console.error(`predict_latex request failed`, textStatus, errorThrown)
+        report_error(`latex prediction:`, ajax_obj.responseText);
     })
 }
 
@@ -110,6 +109,15 @@ function run_prediction_for_image() {
             xhr: () => { // Seems like the only way to get access to the xhr object and change its type to blob
                 let xhr = new XMLHttpRequest();
                 xhr.responseType = 'blob'
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 2) {
+                        if (xhr.status === 200) {
+                            xhr.responseType = "blob";
+                        } else {
+                            xhr.responseType = "text";
+                        }
+                    }
+                };
                 return xhr;
             },
         }).done(function (data) {
@@ -119,8 +127,7 @@ function run_prediction_for_image() {
             };
             reader.readAsDataURL(data);
         }).fail(function (ajax_obj, textStatus, errorThrown) {
-            report_error(`${api_call} request failed: ${errorThrown}`);
-            console.error(`${api_call} request failed`, textStatus, errorThrown)
+            report_error(`${api_call} request failed:`, ajax_obj.responseText);
         })
     }
 
