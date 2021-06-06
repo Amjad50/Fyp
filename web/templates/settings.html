@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentation{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+    {{ super() }}
+
+    <div class="container">
+        <h2 class="header1">UI settings</h2>
+        <div class="p-3 mb-2 bg-light rounded-3">
+            <div class="row">
+                <div class="col form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="toast_disappear_check">
+                    <label class="form-check-label" for="toast_disappear_check">
+                        Error toast should disappear automatically
+                    </label>
+                </div>
+                <div class="col" style="text-align: right">
+                    <button class="btn btn-primary" id="toast_disappear_check_test">Test</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- The script and logic for this page -->
+    <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

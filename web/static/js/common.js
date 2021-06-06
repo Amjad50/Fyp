@@ -1,3 +1,6 @@
+const TOAST_DISAPPEAR_KEY = 'toast_disappear_setting_key';
+let toast_disappear_setting;
+
 function fix_brackets(latex_input) {
     latex_input = latex_input.replace(/{{([^{}]*)}}/g, "\u1234$1\u1235");
 
@@ -29,6 +32,10 @@ function img_to_base64(img) {
     return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
+function refresh_toast_disappear_setting() {
+    toast_disappear_setting = localStorage.getItem(TOAST_DISAPPEAR_KEY) === 'true';
+}
+
 function report_error(err_msg_prefix, err) {
     console.error('report_error', err_msg_prefix, err);
     let error_msg = ''
@@ -40,32 +47,53 @@ function report_error(err_msg_prefix, err) {
                 error_msg = err_json['error'];
             }
         } catch (e) {
+            error_msg = err;
         }
     }
     error_msg = err_msg_prefix + ' ' + error_msg;
+    let close_button = '';
+    if (!toast_disappear_setting) {
+        close_button =
+            `<button type="button" class="toast_close btn-close btn-close-white" data-bs-dismiss="toast"
+        aria-label="Close"></button>`
+    }
     let new_toast = $(`
     <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
        <div class="toast-header bg-danger text-white">
          <strong class="me-auto">LaTeX Predictor Error</strong>
+         ${close_button}
        </div>
        <div class="toast-body">
          ${error_msg}
        </div>
      </div>
     `);
-    const FULL_TIME = 1000;
-    const STEPS = 20;
-    setTimeout(() => {
-        let op = 1;
-        setInterval((n) => {
-            new_toast.css('opacity', op);
-            op -= 1 / STEPS;
-            if (op === 0.0) {
-                new_toast.remove();
-            }
-        }, FULL_TIME / STEPS)
-    }, 3000);
+
+    if (toast_disappear_setting) {
+        const FULL_TIME = 1000;
+        const STEPS = 20;
+        setTimeout(() => {
+            let op = 1;
+            setInterval((n) => {
+                new_toast.css('opacity', op);
+                op -= 1 / STEPS;
+                if (op < 0.0) {
+                    new_toast.remove();
+                }
+            }, FULL_TIME / STEPS)
+        }, 3000);
+    }
 
     $('#toast_container').append(new_toast);
 }
+
+(function load() {
+    $(document).ready(function () {
+        console.log('ww');
+        $('#toast_container').on('click', '.toast_close', function () {
+            $(this).closest('.toast').remove();
+        })
+        refresh_toast_disappear_setting();
+    });
+})();
 
