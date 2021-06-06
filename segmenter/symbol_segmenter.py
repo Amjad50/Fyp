@@ -9,6 +9,11 @@ from .simple_identifiers import *
 from .utils import *
 
 
+class TooManyCropsException(Exception):
+    def __init__(self, l):
+        super().__init__(f"The number of segments is too large ({l}), the maximum support is 100 segments")
+
+
 def __segment_char_flood_fill(img: np.ndarray, start: Tuple[int, int]):
     """
     Runs given the image and where it should start,
@@ -263,6 +268,10 @@ def segment_image(img: Image, use_opencv: bool = True):
         crops, cropped_images = __get_crops_images_opencv(img)
     else:
         crops, cropped_images = __get_crops_images_flood_fill(img)
+
+    print(len(crops))
+    if (crops_len := len(crops)) > 100:
+        raise TooManyCropsException(crops_len)
 
     # tries to find symbols that are mergable, like `=`, `:`, `i`, `j`... and merge them
     crops, cropped_images = __try_merge_segments(crops, cropped_images, img)

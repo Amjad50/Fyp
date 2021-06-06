@@ -11,7 +11,7 @@ from classifier.labeler import get_labeled_crops, draw_labeled_crops
 from dataset_generator.generator import generate_single_from_template
 from parser.tree import SymbolTree
 from segmenter.labeler import draw_crops_rects
-from segmenter.symbol_segmenter import segment_image_crops
+from segmenter.symbol_segmenter import segment_image_crops, TooManyCropsException
 from utils.image import img_to_binary
 from .utils import json_arguments, response_image
 
@@ -26,6 +26,11 @@ generation_temp_folder = mkdtemp(prefix="latex_generation")
 # return 400 errors in json format
 @app.errorhandler(400)
 def resource_not_found(e):
+    return jsonify(error=str(e)), 400
+
+
+@app.errorhandler(TooManyCropsException)
+def too_many_crops_exception_handler(e):
     return jsonify(error=str(e)), 400
 
 
