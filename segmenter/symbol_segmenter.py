@@ -269,7 +269,6 @@ def segment_image(img: Image, use_opencv: bool = True):
     else:
         crops, cropped_images = __get_crops_images_flood_fill(img)
 
-    print(len(crops))
     if (crops_len := len(crops)) > 100:
         raise TooManyCropsException(crops_len)
 
